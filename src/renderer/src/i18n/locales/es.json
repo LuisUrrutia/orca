@@ -1171,7 +1171,7 @@
         "chooseRunTarget": "Elegir destino",
         "noRunTargets": "No hay destinos de ejecución listos para este proyecto.",
         "perWorkspaceEnvHint": "Provisiona un entorno bajo demanda a partir de una receta",
-        "branchName": "Nombre de rama",
+        "branchName": "Nombre de branch",
         "branchNamePlaceholder": "feature/my-branch"
       },
       "NewWorkspaceComposerModal": {
@@ -2590,7 +2590,7 @@
             "sessionQueued": "Sesión en cola",
             "runtimeWorkspacesUnsupported": "Reanudar desde el historial no está disponible en espacios de trabajo alojados en un host.",
             "openSupportedWorkspace": "Abre un espacio de trabajo local o SSH antes de reanudar una sesión.",
-            "localSessionSshWorkspaceUnsupported": "El historial de esta sesión está almacenado en este equipo, por lo que no se puede reanudar en un espacio de trabajo SSH. En su lugar, suéltala en un espacio de trabajo local."
+            "localSessionSshWorkspaceUnsupported": "El historial de esta sesión está guardado en este equipo, así que no puede reanudarse en un workspace SSH. Suéltala en un workspace local en su lugar."
           },
           "TabGroupDropOverlay": {
             "paneColumnLabel": "Nueva división"
@@ -3509,7 +3509,7 @@
           "d4f1df62ef": "{{value0}} repos",
           "b4263a2ac4": "Se encontró {{value0}} en {{value1}}.",
           "24eda6c8b2": "Escaneando... {{value0}}",
-          "6149d5203f": "No hay repositorios seleccionados. Abre la carpeta principal para usar el editor, la terminal y la búsqueda sin funciones de Git.",
+          "6149d5203f": "No hay repos seleccionados. Abre la carpeta principal para usar el editor, la terminal y la búsqueda sin funciones de Git.",
           "e52454b7f6": "Abrir como carpeta"
         },
         "AddRepoRemoteStep": {
@@ -4099,7 +4099,7 @@
           "hostDisconnected": "Desconectado",
           "failedNestWorkspace": "No se pudo anidar el espacio de trabajo",
           "sidebarRowMissing": "El destino ya no existe",
-          "failedUnnestWorkspace": "Failed to unnest workspace"
+          "failedUnnestWorkspace": "No se pudo quitar la anidación del workspace"
         },
         "WorktreeMetaDialog": {
           "3db0a2a593": "Cancelar",
@@ -5167,8 +5167,8 @@
           "4aa4d9fb73": "Ajusta líneas largas en editores de diff en lugar de requerir desplazamiento horizontal.",
           "bf16ef0af2": "Desactivado",
           "3f6892f307": "Activado",
-          "b82f86d7d2": "Rich Markdown Spellcheck",
-          "5195f0b9ef": "Show browser spelling underlines and suggestions while editing rich Markdown."
+          "b82f86d7d2": "Corrector ortográfico de Rich Markdown",
+          "5195f0b9ef": "Muestra subrayados y sugerencias ortográficas del navegador al editar Rich Markdown."
         },
         "AdvancedNetworkSettingsSection": {
           "3e431564b5": "localhost, 127.0.0.1, *.internal",
@@ -7422,8 +7422,8 @@
             "8e593f04fc": "Muestra un diálogo de confirmación antes de cerrar una pestaña fijada.",
             "defaultProjectRuntime": "Runtime de proyecto predeterminado",
             "defaultProjectRuntimeDescription": "Elige el runtime que heredarán los proyectos locales de Windows.",
-            "d2d2d929c0": "Rich Markdown Spellcheck",
-            "4497e2e2bb": "Show browser spelling underlines and suggestions while editing rich Markdown."
+            "d2d2d929c0": "Corrector ortográfico de Rich Markdown",
+            "4497e2e2bb": "Muestra subrayados y sugerencias ortográficas del navegador al editar Rich Markdown."
           }
         },
         "git": {
@@ -9576,7 +9576,7 @@
             "runtimeBrowseLocalHistory": "Los workspaces alojados en runtime pueden explorar el historial local. Las acciones de reanudación están disponibles en workspaces locales y SSH.",
             "runtimeWorkspacesUnsupported": "Reanudar desde el historial no está disponible en workspaces alojados en runtime.",
             "openSupportedWorkspace": "Abre un workspace local o SSH antes de reanudar una sesión.",
-            "localSessionSshWorkspaceUnsupported": "El historial de esta sesión está almacenado en este equipo, por lo que no se puede reanudar en un espacio de trabajo SSH. En su lugar, abre un espacio de trabajo local."
+            "localSessionSshWorkspaceUnsupported": "El historial de esta sesión está guardado en este equipo, así que no puede reanudarse en un workspace SSH. Abre un workspace local en su lugar."
           },
           "AiVaultPanelControls": {
             "scanningSessions": "Buscando sesiones",
