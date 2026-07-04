@@ -1170,7 +1170,9 @@
         "ephemeralVm": "Entorno por espacio de trabajo",
         "chooseRunTarget": "Elegir destino",
         "noRunTargets": "No hay destinos de ejecución listos para este proyecto.",
-        "perWorkspaceEnvHint": "Provisiona un entorno bajo demanda a partir de una receta"
+        "perWorkspaceEnvHint": "Provisiona un entorno bajo demanda a partir de una receta",
+        "branchName": "Nombre de rama",
+        "branchNamePlaceholder": "feature/my-branch"
       },
       "NewWorkspaceComposerModal": {
         "createWorktree": "Crear worktree",
@@ -2450,6 +2452,7 @@
             "0a917b591a": "Pegar",
             "f3eeb1de13": "Copiar",
             "c2f0b72b8d": "Insertar",
+            "openLinkDefaultBrowser": "Abrir en el navegador predeterminado",
             "925f49f210": "Expandir panel",
             "df766809e0": "Contraer panel",
             "cff67afad1": "Copiar contexto"
@@ -2586,7 +2589,8 @@
             "openLocalWorkspace": "Abre un espacio de trabajo local antes de reanudar una sesión.",
             "sessionQueued": "Sesión en cola",
             "runtimeWorkspacesUnsupported": "Reanudar desde el historial no está disponible en espacios de trabajo alojados en un host.",
-            "openSupportedWorkspace": "Abre un espacio de trabajo local o SSH antes de reanudar una sesión."
+            "openSupportedWorkspace": "Abre un espacio de trabajo local o SSH antes de reanudar una sesión.",
+            "localSessionSshWorkspaceUnsupported": "El historial de esta sesión está almacenado en este equipo, por lo que no se puede reanudar en un espacio de trabajo SSH. En su lugar, suéltala en un espacio de trabajo local."
           },
           "TabGroupDropOverlay": {
             "paneColumnLabel": "Nueva división"
@@ -2691,7 +2695,7 @@
             "39676a184c": "Abrir cualquier archivo, URL, agente, ..."
           },
           "TabBarQuickCommandsButton": {
-            "a2c7a33831": "Agregar comando rápido…",
+            "a2c7a33831": "Comando",
             "20bbd75896": "Sin comandos",
             "b82e237a4b": "Más comandos rápidos",
             "85482c57bc": "Ejecutar comando rápido",
@@ -2841,10 +2845,7 @@
             "41ae4fa725": "Terminando…",
             "138b99bd80": "esta sesión",
             "888dad8c55": "Cargando…",
-            "56b6888304": "El uso de recursos locales está oculto en hosts remotos.",
-            "14ff448686": "No disponible en hosts remotos",
             "6d9793d4bc": "Administrador de recursos - Terminales",
-            "6a822b06a7": "Administrador de recursos",
             "ca95d077db": "servicio inaccesible",
             "a82253b458": "Eliminar espacio de trabajo.",
             "946724a70a": "El espacio de trabajo principal no se puede eliminar.",
@@ -3507,7 +3508,9 @@
           "8401a7a0d0": "1 repo",
           "d4f1df62ef": "{{value0}} repos",
           "b4263a2ac4": "Se encontró {{value0}} en {{value1}}.",
-          "24eda6c8b2": "Escaneando... {{value0}}"
+          "24eda6c8b2": "Escaneando... {{value0}}",
+          "6149d5203f": "No hay repositorios seleccionados. Abre la carpeta principal para usar el editor, la terminal y la búsqueda sin funciones de Git.",
+          "e52454b7f6": "Abrir como carpeta"
         },
         "AddRepoRemoteStep": {
           "5b205b5281": "Detener escaneo",
@@ -4095,7 +4098,8 @@
           "hostAuthNeeded": "Autenticación requerida",
           "hostDisconnected": "Desconectado",
           "failedNestWorkspace": "No se pudo anidar el espacio de trabajo",
-          "sidebarRowMissing": "El destino ya no existe"
+          "sidebarRowMissing": "El destino ya no existe",
+          "failedUnnestWorkspace": "Failed to unnest workspace"
         },
         "WorktreeMetaDialog": {
           "3db0a2a593": "Cancelar",
@@ -5162,7 +5166,9 @@
           "8f1afdfbd8": "Ajuste de línea en diffs",
           "4aa4d9fb73": "Ajusta líneas largas en editores de diff en lugar de requerir desplazamiento horizontal.",
           "bf16ef0af2": "Desactivado",
-          "3f6892f307": "Activado"
+          "3f6892f307": "Activado",
+          "b82f86d7d2": "Rich Markdown Spellcheck",
+          "5195f0b9ef": "Show browser spelling underlines and suggestions while editing rich Markdown."
         },
         "AdvancedNetworkSettingsSection": {
           "3e431564b5": "localhost, 127.0.0.1, *.internal",
@@ -7415,7 +7421,9 @@
             "161a86a9da": "Confirmar antes de cerrar pestañas fijadas",
             "8e593f04fc": "Muestra un diálogo de confirmación antes de cerrar una pestaña fijada.",
             "defaultProjectRuntime": "Runtime de proyecto predeterminado",
-            "defaultProjectRuntimeDescription": "Elige el runtime que heredarán los proyectos locales de Windows."
+            "defaultProjectRuntimeDescription": "Elige el runtime que heredarán los proyectos locales de Windows.",
+            "d2d2d929c0": "Rich Markdown Spellcheck",
+            "4497e2e2bb": "Show browser spelling underlines and suggestions while editing rich Markdown."
           }
         },
         "git": {
@@ -8819,7 +8827,8 @@
             "98a79948b3": "Copiar",
             "b234ab25b4": "No se pudo copiar el archivo en el portapapeles",
             "f9d7ca753d": "Copiar rutas",
-            "3161c4e425": "carpeta"
+            "3161c4e425": "carpeta",
+            "e887fa4b2e": "Abrir en terminal"
           },
           "FileExplorerToolbar": {
             "d238264654": "Mostrar archivos ignorados por Git",
@@ -9566,7 +9575,8 @@
             "worktreeUnavailable": "El worktree ya no está disponible.",
             "runtimeBrowseLocalHistory": "Los workspaces alojados en runtime pueden explorar el historial local. Las acciones de reanudación están disponibles en workspaces locales y SSH.",
             "runtimeWorkspacesUnsupported": "Reanudar desde el historial no está disponible en workspaces alojados en runtime.",
-            "openSupportedWorkspace": "Abre un workspace local o SSH antes de reanudar una sesión."
+            "openSupportedWorkspace": "Abre un workspace local o SSH antes de reanudar una sesión.",
+            "localSessionSshWorkspaceUnsupported": "El historial de esta sesión está almacenado en este equipo, por lo que no se puede reanudar en un espacio de trabajo SSH. En su lugar, abre un espacio de trabajo local."
           },
           "AiVaultPanelControls": {
             "scanningSessions": "Buscando sesiones",
@@ -10208,8 +10218,8 @@
           "title": "Dirección de red personalizada",
           "description": "Anuncia una dirección que tu teléfono pueda alcanzar cuando no esté en la misma red Wi-Fi: por ejemplo, un nombre de host de Tailscale o una IP estática.",
           "label": "Dirección",
-          "placeholder": "my-mac.ts.net o 192.168.1.50",
-          "hint": "Introduce una dirección IP o un nombre de host de Tailscale (termina en .ts.net).",
+          "placeholder": "my-mac.ts.net, home.example.com o 192.168.1.50",
+          "hint": "Introduce una dirección IP o un nombre de host (un nombre MagicDNS de Tailscale, un dominio DDNS o un nombre de host de LAN), opcionalmente con :puerto.",
           "cancel": "Cancelar",
           "use": "Usar dirección"
         },
@@ -11702,7 +11712,8 @@
             "4bb7424d6b": "Cancelado",
             "6e776f9ef9": "Falló la descarga",
             "756bfc25c9": "Abrir",
-            "09a9489aa5": "Mostrar"
+            "09a9489aa5": "Mostrar",
+            "2a4c4b8e1f": "Copiar"
           },
           "BrowserToolbarMenu": {
             "429ef481f9": "Cancelar",
