@@ -103,7 +103,7 @@
       "caea5b51b9": "Reiniciar ahora",
       "0a9e810705": "Hasta que reinicies, los cambios no se guardarán. Tus pestañas anteriores siguen guardadas en disco.",
       "12e77cf12b": "Error al restaurar la sesión",
-      "332dbfa497": "Espacio de trabajo sincronizado",
+      "332dbfa497": "Espacio de trabajo subido",
       "e960d18540": "Cerrar",
       "c9d6f98459": "Maximizar",
       "66f0a552e5": "Restaurar",
@@ -647,7 +647,7 @@
         "b1c2f8b0ac": "Cambio de cuenta opcional para Claude, Codex, Gemini y OpenCode Go.",
         "f70ac54d38": "Cuentas de proveedores de IA",
         "4121f7a0a2": "Administra agentes de IA, define uno predeterminado y personaliza comandos.",
-        "b49abbd2f7": "Agents",
+        "b49abbd2f7": "Agentes",
         "dev": "Dev Tools",
         "devDescription": "Herramientas solo para dev para probar estados de UI.",
         "devBadge": "Dev",
@@ -936,7 +936,7 @@
         "4186685c78": "reabrir",
         "cae2712a23": "cerrar",
         "881e522e04": "merge",
-        "6de8ce0cc6": "{{value0}} obligatorio",
+        "6de8ce0cc6": "{{value0}} obligatorias",
         "22511537d2": "Aprobado",
         "00f3bab87b": " de {{value0}} obligatorias",
         "11384f99aa": "número",
@@ -1040,7 +1040,7 @@
         "df4c86ed12": "Cerrar",
         "7a4997d8bb": "Cerrar vista previa del issue de Linear",
         "e1e0a9bca9": "Iniciar espacio de trabajo",
-        "30a7f56c0a": "Iniciar espacio de trabajo desde issue",
+        "30a7f56c0a": "Iniciar espacio de trabajo desde el issue",
         "30c1242f3a": "Copiar identificador",
         "9e3c49beb8": "Copiar identificador del issue",
         "9a9a884236": "Copiar URL",
@@ -1073,7 +1073,7 @@
         "519c3587f3": "Agregar al proyecto"
       },
       "LinearItemDrawer": {
-        "04008e6c46": "Iniciar espacio de trabajo desde issue",
+        "04008e6c46": "Iniciar espacio de trabajo desde el issue",
         "a4fcc57522": "Aún no hay comentarios.",
         "fde849b2b6": "Comentarios",
         "9dc54172db": "Cerrar · Esc",
@@ -1205,7 +1205,7 @@
         "161d91ef02": "Enviar comentario",
         "d2030fc8cd": "Añade un comentario…",
         "1208347ac0": "No se pudo agregar el comentario",
-        "61452f2143": "Iniciar espacio de trabajo desde issue",
+        "61452f2143": "Iniciar espacio de trabajo desde el issue",
         "14c9fc70ed": "+ Asignado",
         "bc215fea4d": "+ Etiqueta",
         "b936cc51a4": "Cerrado",
@@ -1656,7 +1656,7 @@
         "33a4bd7f5c": "pendientes",
         "66ae7330f6": "Más acciones",
         "93d5f21fc1": "pr",
-        "e104fa3d3d": "Iniciar espacio de trabajo desde issue",
+        "e104fa3d3d": "Iniciar espacio de trabajo desde el issue",
         "2193a99ec1": "Abrir espacio de trabajo adjunto al issue",
         "7deb9e59a5": "Más acciones de PR",
         "7753652524": "Reanudar",
@@ -2007,7 +2007,7 @@
         },
         "PRFilterDropdowns": {
           "979be3cf6b": "Asignado",
-          "b27b7e526c": "Review from",
+          "b27b7e526c": "Revisión de",
           "7f1ba66c3e": "Revisado por",
           "9d0f2eda6d": "Etiqueta",
           "01f3f3d161": "Autor",
@@ -3457,7 +3457,7 @@
                   "f15fd80989": "Tu nuevo worktree está actualizado, pero {{value0}} local está {{value1}} {{value2}} atrás, así que los diffs de IA pueden compararse con historial obsoleto. Deja que Orca lo mantenga actualizado automáticamente. Puedes cambiar esto en cualquier momento en",
                   "3d260e1a5d": "Ajustes › {{value0}}",
                   "34a03a6565": "Mantener {{value0}} actualizado",
-                  "4a18052018": "{{value0}} local está {{value1}} atrás",
+                  "4a18052018": "{{value0}} local está detrás de {{value1}}",
                   "commit": "commit",
                   "commits": "commits"
                 }
@@ -4099,7 +4099,7 @@
           "hostDisconnected": "Desconectado",
           "failedNestWorkspace": "No se pudo anidar el espacio de trabajo",
           "sidebarRowMissing": "El destino ya no existe",
-          "failedUnnestWorkspace": "No se pudo quitar la anidación del workspace"
+          "failedUnnestWorkspace": "No se pudo quitar la anidación del espacio de trabajo"
         },
         "WorktreeMetaDialog": {
           "3db0a2a593": "Cancelar",
@@ -4230,7 +4230,7 @@
         },
         "useAddRepoCloneFlow": {
           "4d0013cc93": "Repositorio clonado",
-          "0dc4d1b657": "Introduce una ruta del host para el destino del clone."
+          "0dc4d1b657": "Introduce una ruta del host para el destino del clon."
         },
         "useAddRepoLocalFolderFlow": {
           "7ab10e4974": "Usa una ruta del host para agregar proyectos desde un host remoto.",
@@ -4246,7 +4246,7 @@
           "f34a286c0d": "No se pudo agregar la carpeta soltada.",
           "451a4638db": "Suelta una carpeta para agregarla como proyecto.",
           "5ccb56c7be": "Usa Agregar proyecto para introducir una ruta del host.",
-          "849ef13dc0": "El drop de carpetas locales no está disponible para servidores remotos.",
+          "849ef13dc0": "No se pueden soltar carpetas locales en runtimes de servidor.",
           "c0315153d1": "Suelta una carpeta a la vez."
         },
         "workspace": {
@@ -4756,7 +4756,7 @@
           "0f28e7b30c": "Elige cómo se ve Orca en la ventana de la aplicación.",
           "leftSidebarAppearance": {
             "title": "Apariencia de la barra lateral izquierda",
-            "rowDescription": "Haz que la barra lateral izquierda coincida con tu terminal, mantenga el valor predeterminado o use un tinte.",
+            "rowDescription": "Haz que la barra lateral izquierda coincida con tu terminal, mantén el valor predeterminado o usa un tinte.",
             "default": "Predeterminado",
             "matchTerminal": "Coincidir con el terminal",
             "tinted": "Con tinte",
@@ -5621,7 +5621,7 @@
           "c1d817e027": "Añadida",
           "e4064916aa": "Agregar aplicación",
           "9d0413817d": "Elige las aplicaciones disponibles en el menú Abrir en de un workspace.",
-          "6ed52fe71e": "Apps para Abrir en",
+          "6ed52fe71e": "Abrir en aplicaciones",
           "eb55b87570": "El comando que escribirías en Terminal para abrir esta aplicación.",
           "ba1422ee07": "Comando de terminal",
           "e1fc0085c6": "Etiqueta de menú",
@@ -5733,7 +5733,7 @@
           "af49e2a19e": "El archivo está presente, pero Orca no pudo encontrar definiciones válidas de `scripts` o `issueCommand`.",
           "3397879bee": "y hay comandos locales, elige cuáles se ejecutan.",
           "39da2ae12f": "orca.yaml",
-          "ac9038d2cc": "Cuando tanto",
+          "ac9038d2cc": "Cuando ambos",
           "32fec28f5b": "Origen de comandos",
           "bbbd6e0bc4": "Origen de comandos y orca.yaml",
           "c9bc1bfd8f": "Avanzado",
@@ -5819,7 +5819,7 @@
           "waitForSetupBeforeAgentHelp": "Activa esto cuando la configuración instale dependencias, servidores MCP o archivos de configuración que el agente necesite durante el inicio."
         },
         "RepositoryIconPicker": {
-          "2b7d27b93c": "Usar {{value0}} en el repositorio",
+          "2b7d27b93c": "Usar {{value0}} como color del repositorio",
           "fde066a63b": "Las cargas PNG deben tener un tamaño de 256 KB o menos.",
           "cc1286e263": "Favicon",
           "03ca1a4e9b": "ejemplo.com",
@@ -7324,7 +7324,7 @@
             "baa263d6d8": "agentes",
             "bda108e66c": "skill",
             "244e3fb4c8": "Instala el skill de Orca para que los agentes sepan usar la CLI de Orca.",
-            "2d9f7b42df": "Skill de Agent",
+            "2d9f7b42df": "Skill de agente",
             "0a00691c06": "comando de shell",
             "dbeb1f348e": "comando",
             "88d3df9ce9": "terminal",
@@ -8066,7 +8066,7 @@
             "46d99ef4bb": "opacidad",
             "4c643695aa": "Controla la transparencia del fondo del terminal.",
             "b36fd2416d": "Opacidad del fondo",
-            "d4daf4f612": "desbloquear",
+            "d4daf4f612": "descongelar",
             "88561b3499": "congelado",
             "0a05629060": "recuperar",
             "f66a7cf715": "terminal",
@@ -9469,9 +9469,9 @@
                   "390abeab93": "Force Push",
                   "1884cf34af": "Publicar esta rama en origin",
                   "7b4d02e6b8": "Publicar rama",
-                  "3d5dccef0b": "No hay nada para commit. El PR ya tiene merge.",
+                  "3d5dccef0b": "No hay nada para hacer commit. El PR ya tiene merge.",
                   "41d4bcf157": "Comprobando el estado del PR…",
-                  "acce237921": "No hay nada para commit. La rama no tiene cambios para publicar.",
+                  "acce237921": "No hay nada para hacer commit. La rama no tiene cambios para publicar.",
                   "fa3bd4f40c": "Haz stage de al menos un archivo para crear un commit",
                   "5a477d80cb": "Hacer stage de todos los cambios",
                   "18a0fca877": "Hacer stage de todo",
@@ -9501,7 +9501,7 @@
                   "d8a4c0e369": "Autentícate antes de crear un {{value0}}.",
                   "e9b5d1f470": "Haz checkout de una rama antes de crear un {{value0}}.",
                   "f0c6e2a581": "Esta rama aún no está lista para un {{value0}}.",
-                  "8f9a0b1c2d": "No hay nada para commit. La rama está actualizada.",
+                  "8f9a0b1c2d": "No hay nada para hacer commit. La rama está actualizada.",
                   "h3i4j5k607": "Comprobando si esta rama puede crear un {{value0}}…"
                 }
               }
