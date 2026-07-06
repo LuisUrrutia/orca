@@ -9241,6 +9241,7 @@
             "c1a8f3e204": "1 commit por detrás de {{value0}}",
             "d2b9g4f315": "{{value0}} commits por detrás de {{value1}}",
             "e9c2a5d416": "A la par con {{value0}}",
+            "4b4a7de138": "Abrir página de revisión en el navegador",
             "createPrIntentCommitBlockedSummary": "Commit bloqueado: {{value0}} Corrige el problema y vuelve a intentar Crear PR."
           },
           "SourceControlAgentActionDialog": {
@@ -12448,7 +12449,8 @@
         "title": "¿Permitir {{value0}}?",
         "allow": "Permitir",
         "deny": "Denegar"
-      }
+      },
+      "launchPromptNotDelivered": "No se entregó; revisa el terminal"
     },
     "tab": {
       "bar": {
