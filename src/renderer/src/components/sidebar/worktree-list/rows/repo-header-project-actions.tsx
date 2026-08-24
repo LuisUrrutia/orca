@@ -43,6 +43,7 @@ import {
   stopRepoHeaderKeyboardToggle,
   stopRepoHeaderMenuEvent
 } from './header-event-guards'
+import { filterProjectGroupsForRepo } from '@/store/slices/project-group-owner-routing'
 
 function getWorktreeVisibilityMenuLabel(
   repo: Repo,
@@ -78,6 +79,7 @@ export function RepoHeaderProjectActionsMenu({
   projectGroups: readonly ProjectGroup[]
   actions: RepoHeaderProjectActions
 }): React.JSX.Element {
+  const compatibleProjectGroups = filterProjectGroupsForRepo(projectGroups, repo)
   return (
     <DropdownMenu modal={false}>
       <Tooltip>
@@ -138,14 +140,14 @@ export function RepoHeaderProjectActionsMenu({
           <FolderPlus className="size-3.5" />
           {translate('auto.components.sidebar.WorktreeList.cbfd565f83', 'New group from project')}
         </DropdownMenuItem>
-        {projectGroups.length > 0 ? (
+        {compatibleProjectGroups.length > 0 ? (
           <DropdownMenuSub>
             <DropdownMenuSubTrigger>
               <FolderInput className="size-3.5" />
               {translate('auto.components.sidebar.WorktreeList.4a08fb55f2', 'Move to group')}
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent>
-              {projectGroups.map((group) => (
+              {compatibleProjectGroups.map((group) => (
                 <DropdownMenuItem
                   key={group.id}
                   disabled={repo.projectGroupId === group.id}

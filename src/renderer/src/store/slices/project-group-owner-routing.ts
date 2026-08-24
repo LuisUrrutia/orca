@@ -1,6 +1,8 @@
 import type { GlobalSettings } from '../../../../shared/global-settings-types'
 import type { ProjectGroup } from '../../../../shared/project-group-types'
+import type { Repo } from '../../../../shared/repo-types'
 import {
+  getRepoExecutionHostId,
   LOCAL_EXECUTION_HOST_ID,
   normalizeExecutionHostId,
   parseExecutionHostId,
@@ -34,6 +36,14 @@ export function catalogOwnsHost(catalogHostId: string, rowHostId: string): boole
     return catalogHostId === rowHostId
   }
   return parseExecutionHostId(rowHostId)?.kind !== 'runtime'
+}
+
+export function filterProjectGroupsForRepo(
+  projectGroups: readonly ProjectGroup[],
+  repo: Pick<Repo, 'connectionId' | 'executionHostId'>
+): ProjectGroup[] {
+  const repoHostId = getRepoExecutionHostId(repo)
+  return projectGroups.filter((group) => catalogOwnsHost(getProjectGroupHostId(group), repoHostId))
 }
 
 export function projectGroupMatchesOwnerHost(

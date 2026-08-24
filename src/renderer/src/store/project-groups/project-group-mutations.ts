@@ -5,6 +5,7 @@ import type { Repo } from '../../../../shared/repo-types'
 import { selectProjectGroupRemovalTargets } from '../slices/project-group-removal-targets'
 import {
   catalogOwnsHost,
+  filterProjectGroupsForRepo,
   projectGroupMatchesOwnerHost,
   resolveProjectGroupOwnerHostId,
   settingsForProjectGroupOwner
@@ -17,6 +18,7 @@ import { mergeProjectCompatibilityForHostRepoChange } from '../repos/repo-catalo
 import { applyProjectGroupDeleteCascade } from './project-group-removal-state'
 import { repoWithFetchedOwner, settingsForRepoOwner } from '../repos/owner-routing'
 import { projectGroupWithFetchedOwner } from './project-group-owner-stamping'
+import { getProjectSetupRuntimeTarget } from '../projects/project-host-routing'
 
 export function createProjectGroupMutationActions(
   set: Parameters<StateCreator<AppState>>[0],
@@ -30,9 +32,11 @@ export function createProjectGroupMutationActions(
   | 'moveProjectToGroup'
 > {
   return {
-    createProjectGroup: async (name) => {
+    createProjectGroup: async (name, options) => {
       try {
-        const target = getActiveRuntimeTarget(get().settings)
+        const target = options?.hostId
+          ? getProjectSetupRuntimeTarget(options.hostId)
+          : getActiveRuntimeTarget(get().settings)
         const group =
           target.kind === 'local'
             ? await window.api.projectGroups.create({
@@ -206,12 +210,27 @@ export function createProjectGroupMutationActions(
       }
     },
 
-    moveProjectToGroup: async (projectId, groupId, order) => {
+    moveProjectToGroup: async (projectId, groupId, order, options) => {
       try {
-        if (!findRepoForHost(get().repos, projectId, { settings: get().settings })) {
+        const state = get()
+        const ownerRepo = findRepoForHost(state.repos, projectId, {
+          settings: state.settings,
+          hostId: options?.hostId
+        })
+        if (!ownerRepo) {
           return false
         }
-        const target = getActiveRuntimeTarget(settingsForRepoOwner(get(), projectId))
+        if (
+          groupId &&
+          !filterProjectGroupsForRepo(state.projectGroups, ownerRepo).some(
+            (group) => group.id === groupId
+          )
+        ) {
+          return false
+        }
+        const target = getActiveRuntimeTarget(
+          settingsForRepoOwner(state, projectId, getRepoExecutionHostId(ownerRepo))
+        )
         const moved =
           target.kind === 'local'
             ? await window.api.projectGroups.moveProject({
