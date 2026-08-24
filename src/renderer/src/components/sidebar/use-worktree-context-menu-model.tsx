@@ -31,6 +31,7 @@ import {
 import { useWorktreeContextMenuCommands } from './use-worktree-context-menu-commands'
 import { useWorktreeParentPickerTransition } from './use-worktree-parent-picker-transition'
 import { useWorktreeContextMenuSecondaryActions } from './use-worktree-context-menu-secondary-actions'
+import { filterProjectGroupsForRepo } from '@/store/slices/project-group-owner-routing'
 
 export type WorktreeContextMenuProps = {
   worktree: Worktree
@@ -403,7 +404,7 @@ export function useWorktreeContextMenuModel({
     onContextMenuSelect,
     parentPicker,
     parentPickerOpen,
-    projectGroups,
+    projectGroups: repo ? filterProjectGroupsForRepo(projectGroups, repo) : [],
     ptyIdsByTabId,
     removesProject,
     repo,

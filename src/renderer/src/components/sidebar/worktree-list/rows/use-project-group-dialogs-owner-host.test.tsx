@@ -5,6 +5,7 @@ import { createRoot, type Root } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useProjectGroupDialogs, type ProjectGroupDialogs } from './use-project-group-dialogs'
 import type { ProjectGroup } from '../../../../../../shared/project-group-types'
+import type { Repo } from '../../../../../../shared/repo-types'
 
 const mocks = vi.hoisted(() => ({
   moveProjectToGroup: vi.fn(),
@@ -42,6 +43,15 @@ const remoteGroup: ProjectGroup = {
   updatedAt: 1
 }
 
+const remoteRepo: Repo = {
+  id: 'repo-1',
+  path: '/srv/repo',
+  displayName: 'Repo',
+  badgeColor: '#111',
+  addedAt: 1,
+  executionHostId: 'runtime:env-1'
+}
+
 let latest: ProjectGroupDialogs | null = null
 const roots: Root[] = []
 
@@ -66,6 +76,7 @@ async function renderHookProbe(): Promise<void> {
 
 beforeEach(() => {
   vi.clearAllMocks()
+  mocks.createProjectGroup.mockResolvedValue(remoteGroup)
   mocks.updateProjectGroup.mockResolvedValue(true)
   mocks.deleteProjectGroupWithContainedProjects.mockResolvedValue({
     status: 'deleted-group',
@@ -86,6 +97,28 @@ afterEach(async () => {
 })
 
 describe('project group dialogs carry the owner host', () => {
+  it('creates a group through the paired repo owner', async () => {
+    await renderHookProbe()
+    await act(async () => {
+      latest!.handleCreateGroupFromRepo(remoteRepo)
+    })
+    await act(async () => {
+      await latest!.handleSubmitProjectGroupName('Flute')
+    })
+
+    expect(mocks.createProjectGroup).toHaveBeenCalledWith('Flute', {
+      hostId: 'runtime:env-1'
+    })
+    expect(mocks.moveProjectToGroup).toHaveBeenCalledWith(
+      remoteRepo.id,
+      remoteGroup.id,
+      undefined,
+      {
+        hostId: 'runtime:env-1'
+      }
+    )
+  })
+
   it('renames through the host that owns the group row', async () => {
     await renderHookProbe()
     await act(async () => {
