@@ -142,7 +142,7 @@ describe('WorktreeList lineage child card renderer', () => {
     const markup = await renderWorktreeListMarkup()
 
     expect(markup).toContain('Move to group')
-    expect(markup).not.toContain('Move to group: Local')
+    expect(markup).not.toContain('Move to group:')
   })
 
   it('renders a collapse chevron on project group headers with children', async () => {
