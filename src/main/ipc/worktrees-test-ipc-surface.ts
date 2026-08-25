@@ -28,6 +28,7 @@ export type TestStore = {
   removeWorktreeMeta: KeyedStoreMock
   removeWorkspaceSessionStateForWorktree: KeyedStoreMock
   getAllWorktreeLineage: StoreMock
+  getWorktreeLineage: KeyedStoreMock
   removeWorktreeLineage: KeyedStoreMock
   getAllWorkspaceLineage: StoreMock
   getFolderWorkspaces: StoreMock
@@ -60,6 +61,7 @@ export const store: TestStore = {
   removeWorktreeMeta: vi.fn(),
   removeWorkspaceSessionStateForWorktree: vi.fn(),
   getAllWorktreeLineage: vi.fn(),
+  getWorktreeLineage: vi.fn(),
   removeWorktreeLineage: vi.fn(),
   getAllWorkspaceLineage: vi.fn(),
   getFolderWorkspaces: vi.fn(),

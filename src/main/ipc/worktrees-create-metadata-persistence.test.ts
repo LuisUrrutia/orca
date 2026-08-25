@@ -14,6 +14,7 @@ import {
   makeWorktreeMeta
 } from './worktrees-test-fixtures'
 import type { WorktreeRuntimeStub } from './worktrees-test-runtime-stub'
+import { setWorktreeCatalogRemoteClientNotifier } from './watched-worktree-catalog-notification'
 
 const WORKTREE_HANDLER_CHANNELS = [
   'worktrees:listAll',
@@ -131,6 +132,9 @@ describe('registerWorktreeHandlers', () => {
 
   beforeEach(() => {
     runtimeStub = setupWorktreeHandlers()
+    setWorktreeCatalogRemoteClientNotifier({
+      notifyWorktreeCatalogChangedForRemoteClients: vi.fn()
+    })
   })
 
   it('clears the GitLab MR base handler before re-registering IPC handlers', () => {
@@ -221,6 +225,23 @@ describe('registerWorktreeHandlers', () => {
       updates: { displayName: 'Renamed workspace' }
     })
     expect(runtimeStub.notifyWorktreesChangedForRemoteClients).toHaveBeenCalledWith('repo-1')
+  })
+
+  it('emits one remote worktree event for a lineage update', async () => {
+    const remoteEvent = vi.fn()
+    runtimeStub.updateManagedWorktreeMeta.mockImplementation(async () => {
+      remoteEvent()
+    })
+    setWorktreeCatalogRemoteClientNotifier({
+      notifyWorktreeCatalogChangedForRemoteClients: remoteEvent
+    })
+
+    await handlers['worktrees:updateLineage'](null, {
+      worktreeId: 'repo-1::/workspace/feature-wt',
+      noParent: true
+    })
+
+    expect(remoteEvent).toHaveBeenCalledTimes(1)
   })
 
   it('does not trust renderer-authored automation provenance during local create', async () => {

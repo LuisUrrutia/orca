@@ -131,6 +131,7 @@ export function setupWorktreeHandlers(): WorktreeRuntimeStub {
     store.removeWorktreeMeta,
     store.removeWorkspaceSessionStateForWorktree,
     store.getAllWorktreeLineage,
+    store.getWorktreeLineage,
     store.removeWorktreeLineage,
     store.getAllWorkspaceLineage,
     store.getFolderWorkspaces,
@@ -209,6 +210,7 @@ export function setupWorktreeHandlers(): WorktreeRuntimeStub {
     }
   ])
   store.getAllWorktreeLineage.mockReturnValue({})
+  store.getWorktreeLineage.mockReturnValue(undefined)
   store.getAllWorkspaceLineage.mockReturnValue({})
   store.getFolderWorkspaces.mockReturnValue([])
   store.getProjectGroups.mockReturnValue([])

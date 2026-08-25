@@ -3,8 +3,10 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { listWorktrees, listWorktreesStrict } from '../git/worktree'
-import { notifyWorktreesChanged } from '../ipc/worktree-remote'
-import { setRepoRemoteClientNotifier } from '../ipc/repos/repos-changed-notification'
+import {
+  notifyWatchedWorktreeCatalogChanged,
+  setWorktreeCatalogRemoteClientNotifier
+} from '../ipc/watched-worktree-catalog-notification'
 import { OrcaRuntimeService } from './orca-runtime'
 import {
   authenticate,
@@ -23,15 +25,18 @@ vi.mock('../git/worktree', () => ({
   listWorktreesStrict: vi.fn()
 }))
 
+const initialWorktreePath = join(tmpdir(), 'repo')
+const externalWorktreePath = join(tmpdir(), 'external-worktree')
+
 const initialWorktree = {
-  path: '/tmp/repo',
+  path: initialWorktreePath,
   head: 'initial-head',
   branch: 'refs/heads/main',
   isBare: false,
   isMainWorktree: true
 }
 const externalWorktree = {
-  path: '/tmp/external-worktree',
+  path: externalWorktreePath,
   head: 'external-head',
   branch: 'refs/heads/external-worktree',
   isBare: false,
@@ -68,7 +73,7 @@ describe('external worktree discovery for paired clients', () => {
     vi.mocked(listWorktrees).mockResolvedValue([initialWorktree])
     vi.mocked(listWorktreesStrict).mockResolvedValue([initialWorktree])
     const runtime = new OrcaRuntimeService(makeStore() as never)
-    setRepoRemoteClientNotifier(runtime)
+    setWorktreeCatalogRemoteClientNotifier(runtime)
     const userDataPath = mkdtempSync(join(tmpdir(), 'orca-ewd-'))
     tempDirs.push(userDataPath)
     const server = new OrcaRuntimeRpcServer({
@@ -99,11 +104,11 @@ describe('external worktree discovery for paired clients', () => {
       method: 'worktree.list',
       params: { repo: REPO_ID, limit: 100 }
     })
-    expect(catalogPaths(await reader.next('initial-catalog'))).toEqual(['/tmp/repo'])
+    expect(catalogPaths(await reader.next('initial-catalog'))).toEqual([initialWorktreePath])
 
     vi.mocked(listWorktrees).mockResolvedValue([initialWorktree, externalWorktree])
     vi.mocked(listWorktreesStrict).mockResolvedValue([initialWorktree, externalWorktree])
-    notifyWorktreesChanged(
+    notifyWatchedWorktreeCatalogChanged(
       { isDestroyed: () => false, webContents: { send: vi.fn() } } as never,
       REPO_ID
     )
@@ -125,8 +130,8 @@ describe('external worktree discovery for paired clients', () => {
       params: { repo: REPO_ID, limit: 100 }
     })
     expect(catalogPaths(await reader.next('refreshed-catalog'))).toEqual([
-      '/tmp/repo',
-      '/tmp/external-worktree'
+      initialWorktreePath,
+      externalWorktreePath
     ])
   })
 })

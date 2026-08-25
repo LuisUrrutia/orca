@@ -3,25 +3,13 @@ import type { OrcaRuntimeService } from '../../runtime/orca-runtime'
 import { wakeFolderRepoGitUpgradeWatch } from '../folder-repo-git-upgrade-wake'
 import { scheduleCurrentWorktreeBaseDirectoryWatcherSync } from '../worktree-base-directory-watcher'
 
-type RepoRemoteClientNotifier = Pick<
-  OrcaRuntimeService,
-  'notifyReposChangedForRemoteClients' | 'notifyWorktreeCatalogChangedForRemoteClients'
->
+type RepoRemoteClientNotifier = Pick<OrcaRuntimeService, 'notifyReposChangedForRemoteClients'>
 
 // Why: notifyReposChanged is module-level and cannot close over a handler argument (#11994).
 let repoRemoteClientNotifier: RepoRemoteClientNotifier | null = null
 
 export function setRepoRemoteClientNotifier(notifier: RepoRemoteClientNotifier): void {
   repoRemoteClientNotifier = notifier
-}
-
-export function notifyWorktreeCatalogChangedForRemoteClients(repoId: string): void {
-  try {
-    repoRemoteClientNotifier?.notifyWorktreeCatalogChangedForRemoteClients(repoId)
-  } catch (err) {
-    // Why: catalog fanout must not break the host renderer's own refresh.
-    console.error('[worktrees] failed to notify remote clients of worktree catalog change', err)
-  }
 }
 
 export function notifyReposChanged(mainWindow: BrowserWindow): void {

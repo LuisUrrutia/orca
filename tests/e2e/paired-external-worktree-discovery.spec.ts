@@ -10,24 +10,29 @@ import {
 } from './helpers/paired-electron-client'
 import { worktreeRow } from './worktree-row-locators'
 
+function normalizeTestPath(value: string): string {
+  const normalized = path.normalize(value)
+  if (process.platform === 'darwin' && normalized.startsWith('/private/var/')) {
+    return normalized.slice('/private'.length)
+  }
+  return normalized
+}
+
+function pathsMatch(left: string, right: string): boolean {
+  return normalizeTestPath(left) === normalizeTestPath(right)
+}
+
 async function findWorktreeId(page: Page, repoId: string, worktreePath: string): Promise<string> {
-  const id = await page.evaluate(
-    ({ expectedPath, expectedRepoId }) => {
-      const normalize = (value: string): string =>
-        value.startsWith('/private/var/') ? value.slice('/private'.length) : value
-      return (
-        window.__store
-          ?.getState()
-          .allWorktrees()
-          .find(
-            (worktree) =>
-              worktree.repoId === expectedRepoId &&
-              normalize(worktree.path) === normalize(expectedPath)
-          )?.id ?? null
-      )
-    },
-    { expectedPath: worktreePath, expectedRepoId: repoId }
+  const candidates = await page.evaluate(
+    (expectedRepoId) =>
+      window.__store
+        ?.getState()
+        .allWorktrees()
+        .filter((worktree) => worktree.repoId === expectedRepoId)
+        .map((worktree) => ({ id: worktree.id, path: worktree.path })) ?? [],
+    repoId
   )
+  const id = candidates.find((candidate) => pathsMatch(candidate.path, worktreePath))?.id
   if (!id) {
     throw new Error(`Paired client did not catalog ${worktreePath}`)
   }
@@ -55,17 +60,13 @@ test('shows a worktree created outside Orca on a paired host', async ({
     rmSync(externalPath, { recursive: true, force: true })
   })
   try {
-    const repoId = await sharedPage.evaluate((expectedPath) => {
-      const normalize = (value: string): string =>
-        value.startsWith('/private/var/') ? value.slice('/private'.length) : value
-      const repo = window.__store
-        ?.getState()
-        .repos.find((candidate) => normalize(candidate.path) === normalize(expectedPath))
-      if (!repo) {
-        throw new Error(`Headed host did not catalog ${expectedPath}`)
-      }
-      return repo.id
-    }, testRepoPath)
+    const repos = await sharedPage.evaluate(
+      () => window.__store?.getState().repos.map((repo) => ({ id: repo.id, path: repo.path })) ?? []
+    )
+    const repoId = repos.find((repo) => pathsMatch(repo.path, testRepoPath))?.id
+    if (!repoId) {
+      throw new Error(`Headed host did not catalog ${testRepoPath}`)
+    }
     client = await launchPairedElectronClient(
       await createRuntimeDesktopPairingOffer(sharedPage),
       testInfo,
@@ -85,21 +86,21 @@ test('shows a worktree created outside Orca on a paired host', async ({
       .toBe(true)
     await expect
       .poll(
-        () =>
-          client?.page.evaluate(
-            ({ expectedPath, expectedRepoId }) => {
-              const normalize = (value: string): string =>
-                value.startsWith('/private/var/') ? value.slice('/private'.length) : value
-              const paths =
-                window.__store
-                  ?.getState()
-                  .allWorktrees()
-                  .filter((worktree) => worktree.repoId === expectedRepoId)
-                  .map((worktree) => worktree.path) ?? []
-              return paths.some((candidate) => normalize(candidate) === normalize(expectedPath))
-            },
-            { expectedPath: testRepoPath, expectedRepoId: repoId }
-          ),
+        async () => {
+          if (!client) {
+            return false
+          }
+          const paths = await client.page.evaluate(
+            (expectedRepoId) =>
+              window.__store
+                ?.getState()
+                .allWorktrees()
+                .filter((worktree) => worktree.repoId === expectedRepoId)
+                .map((worktree) => worktree.path) ?? [],
+            repoId
+          )
+          return paths.some((candidate) => pathsMatch(candidate, testRepoPath))
+        },
         { timeout: 30_000 }
       )
       .toBe(true)
@@ -111,24 +112,21 @@ test('shows a worktree created outside Orca on a paired host', async ({
 
     await expect
       .poll(
-        () =>
-          client?.page.evaluate(
-            ({ expectedPath, expectedRepoId }) => {
-              const normalize = (value: string): string =>
-                value.startsWith('/private/var/') ? value.slice('/private'.length) : value
-              return (
-                window.__store
-                  ?.getState()
-                  .allWorktrees()
-                  .some(
-                    (worktree) =>
-                      worktree.repoId === expectedRepoId &&
-                      normalize(worktree.path) === normalize(expectedPath)
-                  ) ?? false
-              )
-            },
-            { expectedPath: externalPath, expectedRepoId: repoId }
-          ),
+        async () => {
+          if (!client) {
+            return false
+          }
+          const paths = await client.page.evaluate(
+            (expectedRepoId) =>
+              window.__store
+                ?.getState()
+                .allWorktrees()
+                .filter((worktree) => worktree.repoId === expectedRepoId)
+                .map((worktree) => worktree.path) ?? [],
+            repoId
+          )
+          return paths.some((candidate) => pathsMatch(candidate, externalPath))
+        },
         { timeout: 30_000 }
       )
       .toBe(true)
