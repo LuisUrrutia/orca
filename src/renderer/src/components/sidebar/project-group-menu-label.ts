@@ -1,21 +1,59 @@
 import { translate } from '@/i18n/i18n'
 import type { Repo } from '../../../../shared/repo-types'
-import { getExecutionHostLabel } from '../../../../shared/execution-host'
-import { getProjectGroupCatalogHostIdForRepo } from '@/store/slices/project-group-owner-routing'
+import type { Worktree } from '../../../../shared/worktree/types'
+import {
+  getExecutionHostLabel,
+  getWorktreeExecutionHostId,
+  LOCAL_EXECUTION_HOST_ID,
+  toRuntimeExecutionHostId,
+  type ExecutionHostId
+} from '../../../../shared/execution-host'
+import {
+  getProjectGroupCatalogHostId,
+  getProjectGroupCatalogHostIdForRepo
+} from '@/store/slices/project-group-owner-routing'
 
-export function getProjectGroupMenuHostLabel(
-  repo: Pick<Repo, 'connectionId' | 'executionHostId'>,
+function getProjectGroupMenuHostLabelForCatalog(
+  hostId: ExecutionHostId,
   hasMultipleCatalogHosts: boolean,
   preferredLabel?: string | null
 ): string | undefined {
   if (!hasMultipleCatalogHosts) {
     return undefined
   }
-  const hostId = getProjectGroupCatalogHostIdForRepo(repo)
-  if (hostId === 'local') {
+  if (hostId === LOCAL_EXECUTION_HOST_ID) {
     return translate('auto.components.sidebar.project-group-menu-label.local', 'Local')
   }
   return preferredLabel?.trim() || getExecutionHostLabel(hostId)
+}
+
+export function getProjectGroupMenuHostLabel(
+  repo: Pick<Repo, 'connectionId' | 'executionHostId'>,
+  hasMultipleCatalogHosts: boolean,
+  preferredLabel?: string | null
+): string | undefined {
+  return getProjectGroupMenuHostLabelForCatalog(
+    getProjectGroupCatalogHostIdForRepo(repo),
+    hasMultipleCatalogHosts,
+    preferredLabel
+  )
+}
+
+export function getProjectGroupMenuHostLabelForWorktree(
+  worktree: Pick<Worktree, 'hostId' | 'runtimeOwnerEnvironmentId'>,
+  repo: Pick<Repo, 'connectionId' | 'executionHostId'> | undefined,
+  hasMultipleCatalogHosts: boolean,
+  preferredLabel?: string | null
+): string | undefined {
+  const runtimeOwnerEnvironmentId = worktree.runtimeOwnerEnvironmentId?.trim()
+  const ownerHostId = runtimeOwnerEnvironmentId
+    ? toRuntimeExecutionHostId(runtimeOwnerEnvironmentId)
+    : getWorktreeExecutionHostId(worktree, repo, LOCAL_EXECUTION_HOST_ID)
+  return getProjectGroupMenuHostLabelForCatalog(
+    getProjectGroupCatalogHostId(ownerHostId),
+    hasMultipleCatalogHosts,
+    preferredLabel
+  )
 }
 
 export function getMoveToGroupMenuLabel(hostLabel?: string | null): string {
