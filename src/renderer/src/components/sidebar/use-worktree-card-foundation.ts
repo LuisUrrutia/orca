@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react'
 
 import { DEFAULT_AGENT_ACTIVITY_DISPLAY_MODE } from '../../../../shared/constants'
 import {
+  getSettingsFocusedExecutionHostId,
   isRuntimeOwnedSshTargetId,
   parseExecutionHostId,
   toRuntimeExecutionHostId
@@ -20,6 +21,10 @@ import { EMPTY_WORKSPACE_PORTS, type WorktreeCardProps } from './worktree-card-m
 import { getDeleteStateForWorktreeHost } from './worktree-delete-state-host-match'
 import { hasMultipleProjectGroupCatalogHosts } from '@/store/slices/project-group-owner-routing'
 import { getProjectGroupMenuHostLabel } from './project-group-menu-label'
+import {
+  filterReposForVisibleHosts,
+  getVisibleSidebarHostIdSet
+} from './worktree-list/listing/host-filtering'
 
 export function useWorktreeCardFoundation({
   worktree,
@@ -179,9 +184,18 @@ export function useWorktreeCardFoundation({
   const runtimeHostLabel = runtimeHostId
     ? (getHostDisplayLabelOverrides(settings).get(runtimeHostId) ?? runtimeEnvironmentName)
     : null
-  const showProjectGroupHostLabels = useAppStore((s) =>
-    hasMultipleProjectGroupCatalogHosts(s.repos ?? [])
-  )
+  const showProjectGroupHostLabels = useAppStore((s) => {
+    const visibleHostIds = getVisibleSidebarHostIdSet(
+      s.visibleWorkspaceHostIds,
+      s.workspaceHostScope
+    )
+    const visibleRepos = filterReposForVisibleHosts(
+      s.repos ?? [],
+      visibleHostIds,
+      getSettingsFocusedExecutionHostId(s.settings)
+    )
+    return hasMultipleProjectGroupCatalogHosts(visibleRepos)
+  })
   const projectGroupHostLabel = repo
     ? getProjectGroupMenuHostLabel(repo, showProjectGroupHostLabels, runtimeHostLabel)
     : undefined

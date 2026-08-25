@@ -35,7 +35,9 @@ vi.mock('lucide-react', async () =>
 
 vi.mock('@/i18n/i18n', () => ({
   translate: (_key: string, fallback: string, values?: Record<string, unknown>) =>
-    fallback.replace('{{value0}}', String(values?.value0 ?? ''))
+    fallback
+      .replace('{{hostLabel}}', String(values?.hostLabel ?? ''))
+      .replace('{{value0}}', String(values?.value0 ?? ''))
 }))
 
 const { RepoHeaderProjectActionsMenu } = await import('./repo-header-project-actions')
