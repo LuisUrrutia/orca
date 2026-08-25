@@ -69,4 +69,41 @@ describe('worktree card project group host label', () => {
 
     expect(result.current.projectGroupHostLabel).toBeUndefined()
   })
+
+  it('uses the worktree owner when duplicate repo ids point at another host', () => {
+    const duplicateLocalRepo = { ...localRepo, id: 'shared-repo' }
+    const duplicateRemoteRepo = { ...remoteRepo, id: 'shared-repo' }
+    const remoteWorktree = {
+      ...localWorktree,
+      id: 'shared-repo::/tmp/remote-repo',
+      repoId: 'shared-repo',
+      hostId: 'ssh:air',
+      runtimeOwnerEnvironmentId: 'work'
+    } as Worktree
+    const localDuplicateWorktree = {
+      ...localWorktree,
+      id: 'shared-repo::/tmp/local-repo',
+      repoId: 'shared-repo'
+    } as Worktree
+    useAppStore.setState({
+      repos: [duplicateRemoteRepo, duplicateLocalRepo],
+      runtimeEnvironments: [{ id: 'work', name: 'Work' }] as never,
+      visibleWorkspaceHostIds: null,
+      workspaceHostScope: 'all'
+    })
+
+    const remote = renderHook(() =>
+      useWorktreeCardFoundation({ worktree: remoteWorktree, repo: duplicateLocalRepo })
+    )
+    expect(remote.result.current.projectGroupHostLabel).toBe('Work')
+    remote.unmount()
+
+    const local = renderHook(() =>
+      useWorktreeCardFoundation({
+        worktree: localDuplicateWorktree,
+        repo: duplicateRemoteRepo
+      })
+    )
+    expect(local.result.current.projectGroupHostLabel).toBe('Local')
+  })
 })

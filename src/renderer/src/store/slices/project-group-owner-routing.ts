@@ -41,7 +41,10 @@ export function catalogOwnsHost(catalogHostId: string, rowHostId: string): boole
 export function getProjectGroupCatalogHostIdForRepo(
   repo: Pick<Repo, 'connectionId' | 'executionHostId'>
 ): ExecutionHostId {
-  const hostId = getRepoExecutionHostId(repo)
+  return getProjectGroupCatalogHostId(getRepoExecutionHostId(repo))
+}
+
+export function getProjectGroupCatalogHostId(hostId: ExecutionHostId): ExecutionHostId {
   return parseExecutionHostId(hostId)?.kind === 'runtime' ? hostId : LOCAL_EXECUTION_HOST_ID
 }
 
