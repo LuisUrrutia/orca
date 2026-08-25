@@ -8,7 +8,6 @@ import {
   launchPairedElectronClient,
   type PairedElectronClient
 } from './helpers/paired-electron-client'
-import { launchHeadlessPairedRuntimeHost } from './helpers/headless-paired-runtime-host'
 import { worktreeRow } from './worktree-row-locators'
 
 async function findWorktreeId(page: Page, repoId: string, worktreePath: string): Promise<string> {
@@ -137,115 +136,5 @@ test('shows a worktree created outside Orca on a paired host', async ({
     await expect(worktreeRow(client.page, externalId)).toBeVisible()
   } finally {
     await client?.dispose()
-  }
-})
-
-test('polls external worktrees from a paired host without catalog events', async ({
-  registerPostElectronShutdownCleanup,
-  testRepoPath
-}, testInfo) => {
-  test.setTimeout(180_000)
-  const suffix = `${Date.now()}-${testInfo.workerIndex}`
-  const branch = `e2e-paired-legacy-${suffix}`
-  const externalPath = path.join(path.dirname(testRepoPath), branch)
-  const host = await launchHeadlessPairedRuntimeHost()
-  let client: PairedElectronClient | undefined
-  let worktreeCreated = false
-  registerPostElectronShutdownCleanup(async () => {
-    if (worktreeCreated) {
-      await gitExecFileAsync(['worktree', 'remove', '--force', externalPath], {
-        cwd: testRepoPath
-      }).catch(() => undefined)
-      await gitExecFileAsync(['branch', '-D', branch], { cwd: testRepoPath }).catch(() => undefined)
-    }
-    rmSync(externalPath, { recursive: true, force: true })
-  })
-  try {
-    const status = (await host.client.call<{ capabilities?: string[] }>('status.get')).result
-    expect(status.capabilities).not.toContain('worktree.catalog-events.v1')
-    await host.client.call('settings.update', {
-      worktreeVisibilityDefaults: { external: 'show' }
-    })
-    await host.client.call('repo.add', { path: testRepoPath, kind: 'git' })
-    client = await launchPairedElectronClient(
-      host.offer,
-      testInfo,
-      'Legacy external worktree discovery'
-    )
-    await expect
-      .poll(
-        () =>
-          client?.page.evaluate((expectedPath) => {
-            const normalize = (value: string): string =>
-              value.startsWith('/private/var/') ? value.slice('/private'.length) : value
-            return (
-              window.__store
-                ?.getState()
-                .repos.find((repo) => normalize(repo.path) === normalize(expectedPath))?.id ?? null
-            )
-          }, testRepoPath),
-        { timeout: 30_000 }
-      )
-      .not.toBeNull()
-    const repoId = await client.page.evaluate((expectedPath) => {
-      const normalize = (value: string): string =>
-        value.startsWith('/private/var/') ? value.slice('/private'.length) : value
-      return (
-        window.__store
-          ?.getState()
-          .repos.find((repo) => normalize(repo.path) === normalize(expectedPath))?.id ?? null
-      )
-    }, testRepoPath)
-    if (typeof repoId !== 'string') {
-      throw new Error(`Paired client did not catalog ${testRepoPath}`)
-    }
-    await expect
-      .poll(
-        () =>
-          client?.page.evaluate(
-            (expectedRepoId) =>
-              window.__store
-                ?.getState()
-                .allWorktrees()
-                .some((worktree) => worktree.repoId === expectedRepoId) ?? false,
-            repoId
-          ),
-        { timeout: 30_000 }
-      )
-      .toBe(true)
-
-    await gitExecFileAsync(['worktree', 'add', '--quiet', '-b', branch, externalPath], {
-      cwd: testRepoPath
-    })
-    worktreeCreated = true
-
-    await expect
-      .poll(
-        () =>
-          client?.page.evaluate(
-            ({ expectedPath, expectedRepoId }) => {
-              const normalize = (value: string): string =>
-                value.startsWith('/private/var/') ? value.slice('/private'.length) : value
-              return (
-                window.__store
-                  ?.getState()
-                  .allWorktrees()
-                  .some(
-                    (worktree) =>
-                      worktree.repoId === expectedRepoId &&
-                      normalize(worktree.path) === normalize(expectedPath)
-                  ) ?? false
-              )
-            },
-            { expectedPath: externalPath, expectedRepoId: repoId }
-          ),
-        { timeout: 75_000 }
-      )
-      .toBe(true)
-    const externalId = await findWorktreeId(client.page, repoId, externalPath)
-    await expect(worktreeRow(client.page, externalId)).toBeVisible()
-  } finally {
-    await client?.dispose()
-    await host.dispose()
   }
 })

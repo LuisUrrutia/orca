@@ -2213,17 +2213,6 @@ describe('OrcaRuntimeService', () => {
     expect(runtime.getStatus().capabilities).toContain('browser.screencast.v1')
   })
 
-  it('advertises worktree catalog events only when a renderer watcher is available', () => {
-    const runtime = createRuntime()
-
-    expect(runtime.getStatus().capabilities).not.toContain('worktree.catalog-events.v1')
-
-    electronMocks.BrowserWindow.fromId.mockReturnValue({ isDestroyed: () => false } as never)
-    runtime.attachWindow(TEST_WINDOW_ID)
-
-    expect(runtime.getStatus().capabilities).toContain('worktree.catalog-events.v1')
-  })
-
   it('advertises safe Codex reset-credit RPC support as a static capability', () => {
     const runtime = createRuntime()
 

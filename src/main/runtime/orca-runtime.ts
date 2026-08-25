@@ -631,7 +631,6 @@ import {
   RUNTIME_CAPABILITIES,
   RUNTIME_PROTOCOL_VERSION,
   TERMINAL_PAIRED_PARKING_RUNTIME_CAPABILITY,
-  WORKTREE_CATALOG_EVENTS_RUNTIME_CAPABILITY,
   type RuntimeCapability
 } from '../../shared/protocol-version'
 import {
@@ -6145,8 +6144,6 @@ export class OrcaRuntimeService {
     const capabilities: RuntimeCapability[] = RUNTIME_CAPABILITIES.filter(
       (capability) =>
         (capability !== 'browser.screencast.v1' || canBrowse) &&
-        // Headless hosts have no desktop filesystem watcher, so clients must retain pull discovery.
-        (capability !== WORKTREE_CATALOG_EVENTS_RUNTIME_CAPABILITY || hasRenderer) &&
         // Why: the nested-runtime E2E needs a real legacy transport without maintaining an old binary fixture.
         (process.env.ORCA_E2E_DISABLE_RUNTIME_SHARED_CONTROL !== '1' ||
           capability !== REMOTE_RUNTIME_SHARED_CONTROL_CAPABILITY) &&

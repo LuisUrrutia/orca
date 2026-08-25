@@ -11,17 +11,12 @@ import { subscribeRuntimeClientEvents } from '@/runtime/runtime-client-events'
 import { toRemoteRuntimePtyId } from '@/runtime/runtime-terminal-stream'
 import { getEnvironmentSshStateGeneration } from '@/store/slices/runtime-environment-ssh'
 import { getRuntimeEnvironmentConnectionGeneration } from '@/store/slices/runtime-status'
-import { getRepoExecutionHostId, toRuntimeExecutionHostId } from '../../../../shared/execution-host'
+import { toRuntimeExecutionHostId } from '../../../../shared/execution-host'
 import type { RuntimeClientEvent } from '../../../../shared/runtime-client-events'
 import { useAppStore } from '../../store'
-import {
-  createLegacyRuntimeWorktreeCatalogPoller,
-  getLegacyRuntimeWorktreeCatalogEnvironmentIds
-} from '../legacy-runtime-worktree-catalog-poller'
 import { createRuntimeClientEventsSync } from '../runtime-client-events-sync'
 import {
   createRuntimeProjectRefreshScheduler,
-  refreshRuntimeProjectWorktrees,
   refreshRuntimeProjectWorktreesAndLineage
 } from '../runtime-project-refresh-scheduler'
 import {
@@ -74,23 +69,6 @@ export function registerRuntimeClientIpcBridge(
     onError: (error) => {
       console.error('Failed to refresh runtime projects:', error)
     }
-  })
-  const legacyRuntimeWorktreeRefreshScheduler = createRuntimeProjectRefreshScheduler({
-    refresh: async (environmentId) => {
-      const state = useAppStore.getState()
-      const executionHostId = toRuntimeExecutionHostId(environmentId)
-      const repos = state.repos.filter((repo) => getRepoExecutionHostId(repo) === executionHostId)
-      await refreshRuntimeProjectWorktrees(environmentId, repos, (repoId, options) =>
-        useAppStore.getState().fetchWorktrees(repoId, options)
-      )
-    },
-    onError: (error) => {
-      console.error('Failed to refresh legacy runtime worktrees:', error)
-    }
-  })
-  const legacyRuntimeWorktreeCatalogPoller = createLegacyRuntimeWorktreeCatalogPoller({
-    getEnvironmentIds: () => getLegacyRuntimeWorktreeCatalogEnvironmentIds(useAppStore.getState()),
-    requestRefresh: legacyRuntimeWorktreeRefreshScheduler.request
   })
 
   const handleRuntimeClientEvent = (
@@ -216,8 +194,6 @@ export function registerRuntimeClientIpcBridge(
   runtimeClientEventsSync.sync()
   unsubs.push(runtimeClientEventsSync.stop)
   unsubs.push(runtimeProjectRefreshScheduler.stop)
-  unsubs.push(legacyRuntimeWorktreeRefreshScheduler.stop)
-  unsubs.push(legacyRuntimeWorktreeCatalogPoller.stop)
 
   return unsubscribeRuntimeEnvironmentStore
 }
