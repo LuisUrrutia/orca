@@ -44,6 +44,7 @@ import {
   stopRepoHeaderMenuEvent
 } from './header-event-guards'
 import { filterProjectGroupsForRepo } from '@/store/slices/project-group-owner-routing'
+import { getMoveToGroupMenuLabel } from '../../project-group-menu-label'
 
 function getWorktreeVisibilityMenuLabel(
   repo: Repo,
@@ -71,11 +72,13 @@ export type RepoHeaderProjectActions = {
 export function RepoHeaderProjectActionsMenu({
   repo,
   label,
+  projectGroupHostLabel,
   projectGroups,
   actions
 }: {
   repo: Repo
   label: string
+  projectGroupHostLabel?: string
   projectGroups: readonly ProjectGroup[]
   actions: RepoHeaderProjectActions
 }): React.JSX.Element {
@@ -144,7 +147,7 @@ export function RepoHeaderProjectActionsMenu({
           <DropdownMenuSub>
             <DropdownMenuSubTrigger>
               <FolderInput className="size-3.5" />
-              {translate('auto.components.sidebar.WorktreeList.4a08fb55f2', 'Move to group')}
+              {getMoveToGroupMenuLabel(projectGroupHostLabel)}
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent>
               {compatibleProjectGroups.map((group) => (

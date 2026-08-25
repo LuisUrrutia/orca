@@ -20,6 +20,7 @@ import { addHostSectionRows } from '../../host-section-rows'
 import { orderHostSectionOptions } from '../../host-section-order'
 import { buildSidebarHostOptions } from '../../sidebar-host-options'
 import { selectPendingWorktreeCreationKeys } from './pending-worktree-creation-keys'
+import { hasMultipleProjectGroupCatalogHosts } from '@/store/slices/project-group-owner-routing'
 
 type SectionRowsArgs = {
   groupBy: WorktreeGroupBy
@@ -140,6 +141,10 @@ export function useSidebarSectionRows(args: SectionRowsArgs) {
     () => new Map(hostOptions.map((host) => [host.id, host.label])),
     [hostOptions]
   )
+  const showProjectGroupHostLabels = useMemo(
+    () => hasMultipleProjectGroupCatalogHosts(repos),
+    [repos]
+  )
 
   const rows: Row[] = useMemo(
     () =>
@@ -165,7 +170,8 @@ export function useSidebarSectionRows(args: SectionRowsArgs) {
         args.visibleFolderWorkspacesForRows,
         hostLabelById,
         defaultHostId,
-        args.pinnedDisplayPolicy
+        args.pinnedDisplayPolicy,
+        showProjectGroupHostLabels
       ),
     [
       args.groupBy,
@@ -188,6 +194,7 @@ export function useSidebarSectionRows(args: SectionRowsArgs) {
       args.newExternalWorktreesInboxByRepo,
       pendingCreations,
       hostLabelById,
+      showProjectGroupHostLabels,
       args.pinnedDisplayPolicy
     ]
   )

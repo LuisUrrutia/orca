@@ -38,6 +38,20 @@ export function catalogOwnsHost(catalogHostId: string, rowHostId: string): boole
   return parseExecutionHostId(rowHostId)?.kind !== 'runtime'
 }
 
+export function getProjectGroupCatalogHostIdForRepo(
+  repo: Pick<Repo, 'connectionId' | 'executionHostId'>
+): ExecutionHostId {
+  const hostId = getRepoExecutionHostId(repo)
+  return parseExecutionHostId(hostId)?.kind === 'runtime' ? hostId : LOCAL_EXECUTION_HOST_ID
+}
+
+export function hasMultipleProjectGroupCatalogHosts(
+  repos: readonly Pick<Repo, 'connectionId' | 'executionHostId'>[]
+): boolean {
+  const firstHostId = repos[0] ? getProjectGroupCatalogHostIdForRepo(repos[0]) : null
+  return repos.some((repo) => getProjectGroupCatalogHostIdForRepo(repo) !== firstHostId)
+}
+
 export function filterProjectGroupsForRepo(
   projectGroups: readonly ProjectGroup[],
   repo: Pick<Repo, 'connectionId' | 'executionHostId'>
