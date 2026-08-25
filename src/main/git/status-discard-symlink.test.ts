@@ -118,7 +118,9 @@ describe('discardChanges symlink safety', () => {
     const { repo } = await createRepoWithOutsideDirectory()
     await writeFile(path.join(repo, globNamedFile), 'selected')
     await writeFile(path.join(repo, globMatchedFile), 'keep')
-    execFileSync('git', ['add', gitLiteralPathspec(globNamedFile), globMatchedFile], { cwd: repo })
+    execFileSync('git', ['add', '-f', '--', gitLiteralPathspec(globNamedFile), globMatchedFile], {
+      cwd: repo
+    })
     execFileSync('git', ['commit', '-q', '-m', 'track log fixtures'], { cwd: repo })
     await writeFile(path.join(repo, globNamedFile), 'selected modified')
     await writeFile(path.join(repo, globMatchedFile), 'keep modified')

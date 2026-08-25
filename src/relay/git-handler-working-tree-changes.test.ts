@@ -272,6 +272,10 @@ describe('GitHandler', () => {
       gitInit(tmpDir)
       writeFileSync(path.join(tmpDir, '[k]eep.log'), 'selected')
       writeFileSync(path.join(tmpDir, 'keep.log'), 'keep')
+      execFileSync('git', ['add', '-f', '--', '[k]eep.log', 'keep.log'], {
+        cwd: tmpDir,
+        stdio: 'pipe'
+      })
       gitCommit(tmpDir, 'track log fixtures')
       writeFileSync(path.join(tmpDir, '[k]eep.log'), 'selected modified')
       writeFileSync(path.join(tmpDir, 'keep.log'), 'keep modified')

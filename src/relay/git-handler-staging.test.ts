@@ -40,6 +40,10 @@ function createPathspecCollisionChanges(dir: string): void {
   gitInit(dir)
   writeFileSync(path.join(dir, PATHSPEC_SELECTED_FILE), 'selected')
   writeFileSync(path.join(dir, PATHSPEC_MATCHING_FILE), 'matching')
+  execFileSync('git', ['add', '-f', '--', PATHSPEC_SELECTED_FILE, PATHSPEC_MATCHING_FILE], {
+    cwd: dir,
+    stdio: 'pipe'
+  })
   gitCommit(dir, 'initial')
   writeFileSync(path.join(dir, PATHSPEC_SELECTED_FILE), 'selected modified')
   writeFileSync(path.join(dir, PATHSPEC_MATCHING_FILE), 'matching modified')
