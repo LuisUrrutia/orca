@@ -27,6 +27,7 @@ describe('GitHandler', () => {
   })
 
   afterEach(async () => {
+    vi.unstubAllEnvs()
     await removeGitTempDir(tmpDir)
   })
 
@@ -41,6 +42,22 @@ describe('GitHandler', () => {
       })) as Record<string, unknown>[]
       expect(result.length).toBeGreaterThanOrEqual(1)
       expect(result[0].isMainWorktree).toBe(true)
+    })
+
+    it('lists a bare repo when safe.bareRepository requires an explicit gitdir', async () => {
+      execFileSync('git', ['init', '--bare', '--quiet'], { cwd: tmpDir, stdio: 'pipe' })
+      const barePath = await fs.realpath(tmpDir)
+      vi.stubEnv('GIT_CONFIG_COUNT', '1')
+      vi.stubEnv('GIT_CONFIG_KEY_0', 'safe.bareRepository')
+      vi.stubEnv('GIT_CONFIG_VALUE_0', 'explicit')
+
+      const result = (await dispatcher.callRequest('git.listWorktrees', {
+        repoPath: barePath
+      })) as Record<string, unknown>[]
+
+      expect(result).toEqual([
+        expect.objectContaining({ path: barePath, isBare: true, isMainWorktree: true })
+      ])
     })
 
     it('passes request cancellation to the git worktree list subprocess', async () => {

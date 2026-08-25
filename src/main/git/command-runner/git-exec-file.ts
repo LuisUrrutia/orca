@@ -5,6 +5,7 @@ import {
   resolveGitFetchHeadCommand,
   runWithGitFetchHeadLock
 } from '../../../shared/git-fetch-head-lock'
+import { explicitBareRepositoryRetryArgs } from '../../../shared/git-bare-repository-command'
 import {
   isWslLinkedWorktreeGitRoutingCandidate,
   prepareWslLinkedWorktreeGitRouting
@@ -166,15 +167,20 @@ export function gitExecFileAsync(
   args: string[],
   options: GitExecOptions
 ): Promise<{ stdout: string; stderr: string }> {
-  const command = resolveGitFetchHeadCommand(args, options.cwd)
-  return command.needsLock
-    ? runWithGitFetchHeadLock(
-        command.cwd,
-        options.signal,
-        () => gitExecFileAsyncUnlocked(args, options),
-        command.gitDir
-      )
-    : gitExecFileAsyncUnlocked(args, options)
+  const execute = (commandArgs: string[]) => {
+    const run = () => gitExecFileAsyncUnlocked(commandArgs, options)
+    const command = resolveGitFetchHeadCommand(commandArgs, options.cwd)
+    return command.needsLock
+      ? runWithGitFetchHeadLock(command.cwd, options.signal, run, command.gitDir)
+      : run()
+  }
+  return execute(args).catch((error: unknown) => {
+    const retryArgs = explicitBareRepositoryRetryArgs(args, error)
+    if (!retryArgs) {
+      throw error
+    }
+    return execute(retryArgs)
+  })
 }
 
 /**

@@ -9,7 +9,7 @@ import { removeTree } from '../../shared/windows-transient-lock-removal'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { promisify } from 'node:util'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { readRepoWorktreeAdminFingerprint } from './repo-worktree-admin-fingerprint'
 
 const execFileAsync = promisify(execFile)
@@ -44,6 +44,7 @@ beforeEach(async () => {
 })
 
 afterEach(async () => {
+  vi.unstubAllEnvs()
   await removeTree(scratchDir)
 })
 
@@ -135,10 +136,21 @@ describe('readRepoWorktreeAdminFingerprint', () => {
   it('reads a bare repo through its own gitdir', async () => {
     const barePath = join(scratchDir, 'bare.git')
     await git(['clone', '-q', '--bare', repoPath, barePath], scratchDir)
+    vi.stubEnv('GIT_CONFIG_COUNT', '1')
+    vi.stubEnv('GIT_CONFIG_KEY_0', 'safe.bareRepository')
+    vi.stubEnv('GIT_CONFIG_VALUE_0', 'explicit')
     const before = await fingerprint(barePath)
     expect(before).not.toBeNull()
     await git(
-      ['worktree', 'add', '-q', join(scratchDir, 'trees', 'from-bare'), '-b', 'bare-tree'],
+      [
+        '--git-dir=.',
+        'worktree',
+        'add',
+        '-q',
+        join(scratchDir, 'trees', 'from-bare'),
+        '-b',
+        'bare-tree'
+      ],
       barePath
     )
     expect(await fingerprint(barePath)).not.toBe(before)

@@ -25,6 +25,7 @@ import { registerGitHandlers } from './git-handler-registration'
 import { resolveGitFetchHeadCommand, runWithGitFetchHeadLock } from '../shared/git-fetch-head-lock'
 import { endSubprocessStdin } from '../shared/subprocess-stdin-write'
 import { MAX_GIT_BUFFER, runGitToTermination } from './git-handler-command-termination'
+import { explicitBareRepositoryRetryArgs } from '../shared/git-bare-repository-command'
 
 const execFileAsync = promisify(execFile)
 
@@ -159,7 +160,7 @@ export class GitHandler {
     opts?: GitHandlerCommandOptions
   ): Promise<GitHandlerCommandResult> {
     const expandedCwd = expandTilde(cwd)
-    const run = async (): Promise<{ stdout: string; stderr: string }> => {
+    const run = async (commandArgs: string[]): Promise<{ stdout: string; stderr: string }> => {
       const env = opts?.nonInteractive ? buildRelayUnattendedGitEnv() : buildRelayGitEnv()
       if (opts?.disableOptionalLocks) {
         env.GIT_OPTIONAL_LOCKS = '0'
@@ -173,18 +174,29 @@ export class GitHandler {
         signal: opts?.signal
       } satisfies ExecFileOptions
       if (opts?.terminationBarrier) {
-        return runGitToTermination(args, execOptions, opts.stdin)
+        return runGitToTermination(commandArgs, execOptions, opts.stdin)
       }
       if (opts?.stdin !== undefined) {
-        return execFileWithStdin('git', args, execOptions, opts.stdin)
+        return execFileWithStdin('git', commandArgs, execOptions, opts.stdin)
       }
-      const { stdout, stderr } = await execFileAsync('git', args, execOptions)
+      const { stdout, stderr } = await execFileAsync('git', commandArgs, execOptions)
       return { stdout: String(stdout), stderr: String(stderr) }
     }
-    const command = resolveGitFetchHeadCommand(args, expandedCwd)
-    return command.needsLock
-      ? runWithGitFetchHeadLock(command.cwd, opts?.signal, run, command.gitDir)
-      : run()
+    const execute = (commandArgs: string[]) => {
+      const command = resolveGitFetchHeadCommand(commandArgs, expandedCwd)
+      return command.needsLock
+        ? runWithGitFetchHeadLock(command.cwd, opts?.signal, () => run(commandArgs), command.gitDir)
+        : run(commandArgs)
+    }
+    try {
+      return await execute(args)
+    } catch (error) {
+      const retryArgs = explicitBareRepositoryRetryArgs(args, error)
+      if (!retryArgs) {
+        throw error
+      }
+      return execute(retryArgs)
+    }
   }
 
   private async gitBuffer(args: string[], cwd: string): Promise<Buffer> {
