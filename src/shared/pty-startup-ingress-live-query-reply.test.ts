@@ -11,6 +11,7 @@ import {
 
 const COLOR_SCHEME_REPLY = mode2031SequenceFor('dark')
 const OSC_COLOR_REPLY = '\x1b]11;rgb:00/00/00\x07'
+const XTVERSION_REPLY = '\x1bP>|xterm.js(6.1.0-beta.287)\x1b\\'
 const CPR_REPLY = '\x1b[6;1R'
 const DA1_REPLY = '\x1b[?1;2c'
 // ECHOCTL carets every C0 control, so an OSC reply's trailing BEL prints as `^G`. This
@@ -50,13 +51,16 @@ describe('live query replies', () => {
     expect(needsCookedEchoSafeQueryReply(mode2031SequenceFor('light'))).toBe(true)
   })
 
-  it('writes an echo-risk reply in the calling turn', () => {
-    const { ingress, writes } = harness()
-    expect(ingress.answerLiveQueryReply(OSC_COLOR_REPLY)).toBe(true)
-    // No timer advance: the whole point is that there is nothing to wait for.
-    expect(writes).toEqual([OSC_COLOR_REPLY])
-    ingress.drainAndClose()
-  })
+  it.each([OSC_COLOR_REPLY, XTVERSION_REPLY])(
+    'writes an echo-risk reply in the calling turn',
+    (reply) => {
+      const { ingress, writes } = harness()
+      expect(ingress.answerLiveQueryReply(reply)).toBe(true)
+      // No timer advance: the whole point is that there is nothing to wait for.
+      expect(writes).toEqual([reply])
+      ingress.drainAndClose()
+    }
+  )
 
   it('answers repeated identical replies without collapsing them', () => {
     const { ingress, writes } = harness()
@@ -91,6 +95,33 @@ describe('live query replies', () => {
       expect(visible(emissions), echoOf(OSC_COLOR_REPLY)).toBe('')
       ingress.drainAndClose()
     }
+  })
+
+  it('swallows a DCS reply echo under every POSIX shape', () => {
+    for (const echoOf of [caretEcho, (reply: string) => reply]) {
+      const { ingress, writes, emissions } = harness()
+      expect(ingress.answerLiveQueryReply(XTVERSION_REPLY)).toBe(true)
+      expect(writes).toEqual([XTVERSION_REPLY])
+      ingress.accept(echoOf(XTVERSION_REPLY))
+      expect(visible(emissions), echoOf(XTVERSION_REPLY)).toBe('')
+      ingress.drainAndClose()
+    }
+  })
+
+  it('swallows the ESC-stripped ConPTY echo of an XTVERSION reply', () => {
+    const writes: string[] = []
+    const emissions: PtyIngressEmission[] = []
+    const ingress = new PtyStartupIngress({
+      ownerBackend: 'windows-conpty',
+      write: (data) => void writes.push(data),
+      onEmission: (emission) => void emissions.push(emission)
+    })
+
+    expect(ingress.answerLiveQueryReply(XTVERSION_REPLY)).toBe(true)
+    expect(writes).toEqual([XTVERSION_REPLY])
+    ingress.accept(XTVERSION_REPLY.replaceAll('\x1b', ''))
+    expect(visible(emissions)).toBe('')
+    ingress.drainAndClose()
   })
 
   it('never holds a partial verbatim echo, so a torn query is still answered', () => {
