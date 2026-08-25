@@ -77,6 +77,7 @@ async function renderHookProbe(): Promise<void> {
 beforeEach(() => {
   vi.clearAllMocks()
   mocks.createProjectGroup.mockResolvedValue(remoteGroup)
+  mocks.moveProjectToGroup.mockResolvedValue(true)
   mocks.updateProjectGroup.mockResolvedValue(true)
   mocks.deleteProjectGroupWithContainedProjects.mockResolvedValue({
     status: 'deleted-group',
@@ -117,6 +118,67 @@ describe('project group dialogs carry the owner host', () => {
         hostId: 'runtime:env-1'
       }
     )
+  })
+
+  it('reports when the owner host does not confirm group creation', async () => {
+    mocks.createProjectGroup.mockResolvedValue(null)
+    await renderHookProbe()
+    await act(async () => {
+      latest!.handleCreateGroupFromRepo(remoteRepo)
+    })
+    await act(async () => {
+      await latest!.handleSubmitProjectGroupName('Flute')
+    })
+
+    expect(mocks.moveProjectToGroup).not.toHaveBeenCalled()
+    expect(mocks.toastError).toHaveBeenCalledWith('Failed to create group', {
+      description:
+        "Orca could not confirm the new group with the project's host. Check the connection and try again."
+    })
+  })
+
+  it('reports when the group is created but the initial move is not confirmed', async () => {
+    mocks.moveProjectToGroup.mockResolvedValue(false)
+    await renderHookProbe()
+    await act(async () => {
+      latest!.handleCreateGroupFromRepo(remoteRepo)
+    })
+    await act(async () => {
+      await latest!.handleSubmitProjectGroupName('Flute')
+    })
+
+    expect(mocks.toastError).toHaveBeenCalledWith('Group created, but move was not confirmed', {
+      description:
+        "Orca could not confirm the move with the project's host. Recheck the project after reconnecting."
+    })
+  })
+
+  it('reports when a move is not confirmed by the owner host', async () => {
+    mocks.moveProjectToGroup.mockResolvedValue(false)
+    await renderHookProbe()
+    await act(async () => {
+      latest!.handleMoveProjectToGroup(remoteRepo, remoteGroup.id)
+      await Promise.resolve()
+    })
+
+    expect(mocks.toastError).toHaveBeenCalledWith('Failed to move project', {
+      description:
+        "Orca could not confirm the move with the project's host. Recheck the project after reconnecting."
+    })
+  })
+
+  it('reports when removing a project from its group is not confirmed', async () => {
+    mocks.moveProjectToGroup.mockResolvedValue(false)
+    await renderHookProbe()
+    await act(async () => {
+      latest!.handleRemoveProjectFromGroup(remoteRepo)
+      await Promise.resolve()
+    })
+
+    expect(mocks.toastError).toHaveBeenCalledWith('Failed to remove project from group', {
+      description:
+        "Orca could not confirm the change with the project's host. Recheck the project after reconnecting."
+    })
   })
 
   it('renames through the host that owns the group row', async () => {
