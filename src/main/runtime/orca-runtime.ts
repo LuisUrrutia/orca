@@ -6624,6 +6624,13 @@ export class OrcaRuntimeService {
     this.emitClientEvent({ type: 'worktreesChanged', repoId })
   }
 
+  // Why: structural catalog changes require a fresh Git scan; renderer metadata edits do not.
+  notifyWorktreeCatalogChangedForRemoteClients(repoId: string): void {
+    this.invalidateResolvedWorktreeCache()
+    this.invalidateWorktreeScanCacheForRepo(repoId)
+    this.emitClientEvent({ type: 'worktreesChanged', repoId })
+  }
+
   // Why: host-local repo IPC mutations never enter runtime methods, so paired
   // clients need an explicit catalog invalidation; the local renderer already
   // got its own repos:changed and must not be re-notified (#11994).

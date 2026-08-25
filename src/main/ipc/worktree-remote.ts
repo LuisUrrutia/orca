@@ -145,6 +145,7 @@ import {
   retireGeneratedWorktreeName
 } from '../worktree-name-retirement'
 import { createRetiredNameLookup } from '../../shared/worktree/retired-name-registry'
+import { notifyWorktreeCatalogChangedForRemoteClients } from './repos/repos-changed-notification'
 
 const SSH_WORKTREE_CREATE_FETCH_FRESHNESS_MS = 30_000
 const SSH_WORKTREE_CREATE_FETCH_CACHE_MAX = 512
@@ -1486,6 +1487,7 @@ export function notifyWorktreesChanged(mainWindow: BrowserWindow, repoId: string
   if (!mainWindow.isDestroyed()) {
     mainWindow.webContents.send('worktrees:changed', { repoId })
   }
+  notifyWorktreeCatalogChangedForRemoteClients(repoId)
 }
 
 export function notifyWorktreeGitStatusMetadataChanged(
