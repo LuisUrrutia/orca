@@ -7,6 +7,7 @@ import * as fs from 'node:fs/promises'
 import * as path from 'node:path'
 import { mkdirSync, symlinkSync, writeFileSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
+import { runGitFixture } from '../shared/git-process-test-fixture'
 import type { GitHandler } from './git-handler'
 import { gitInit, gitCommit, type MockDispatcher } from './git-handler-test-setup'
 import {
@@ -45,7 +46,7 @@ describe('GitHandler', () => {
     })
 
     it('lists a bare repo when safe.bareRepository requires an explicit gitdir', async () => {
-      execFileSync('git', ['init', '--bare', '--quiet'], { cwd: tmpDir, stdio: 'pipe' })
+      await runGitFixture(tmpDir, ['init', '--bare', '--quiet'])
       const barePath = await fs.realpath(tmpDir)
       vi.stubEnv('GIT_CONFIG_COUNT', '1')
       vi.stubEnv('GIT_CONFIG_KEY_0', 'safe.bareRepository')

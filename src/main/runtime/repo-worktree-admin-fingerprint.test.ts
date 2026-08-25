@@ -3,24 +3,20 @@
 // Also listed in pr.yml's Windows boundary step: reading Git's admin layout directly depends on
 // Windows path resolution, CRLF in `HEAD`/`gitdir`/`commondir`, and whether `worktree move`/`lock`
 // and deleting a live checkout behave as they do on POSIX. The Linux shards cannot reach any of it.
-import { execFile } from 'node:child_process'
 import { mkdir, mkdtemp, realpath, writeFile } from 'node:fs/promises'
 import { removeTree } from '../../shared/windows-transient-lock-removal'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { promisify } from 'node:util'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { runGitFixture } from '../../shared/git-process-test-fixture'
 import { readRepoWorktreeAdminFingerprint } from './repo-worktree-admin-fingerprint'
-
-const execFileAsync = promisify(execFile)
 
 let scratchDir = ''
 let repoPath = ''
 let worktreePath = ''
 
 async function git(args: string[], cwd: string): Promise<string> {
-  const { stdout } = await execFileAsync('git', args, { cwd })
-  return stdout
+  return await runGitFixture(cwd, args)
 }
 
 async function fingerprint(path = repoPath): Promise<string | null> {
