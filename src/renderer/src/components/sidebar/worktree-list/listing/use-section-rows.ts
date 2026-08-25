@@ -20,7 +20,7 @@ import { addHostSectionRows } from '../../host-section-rows'
 import { orderHostSectionOptions } from '../../host-section-order'
 import { buildSidebarHostOptions } from '../../sidebar-host-options'
 import { selectPendingWorktreeCreationKeys } from './pending-worktree-creation-keys'
-import { hasMultipleProjectGroupCatalogHosts } from '@/store/slices/project-group-owner-routing'
+import { selectHasMultipleVisibleProjectGroupCatalogHosts } from './project-group-catalog-visibility'
 
 type SectionRowsArgs = {
   groupBy: WorktreeGroupBy
@@ -141,10 +141,7 @@ export function useSidebarSectionRows(args: SectionRowsArgs) {
     () => new Map(hostOptions.map((host) => [host.id, host.label])),
     [hostOptions]
   )
-  const showProjectGroupHostLabels = useMemo(
-    () => hasMultipleProjectGroupCatalogHosts(args.visibleReposForRows),
-    [args.visibleReposForRows]
-  )
+  const showProjectGroupHostLabels = useAppStore(selectHasMultipleVisibleProjectGroupCatalogHosts)
 
   const rows: Row[] = useMemo(
     () =>
