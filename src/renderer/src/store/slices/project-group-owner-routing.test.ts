@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import type { ProjectGroup } from '../../../../shared/project-group-types'
 import type { Repo } from '../../../../shared/repo-types'
-import { filterProjectGroupsForRepo } from './project-group-owner-routing'
+import {
+  filterProjectGroupsForRepo,
+  hasMultipleProjectGroupCatalogHosts
+} from './project-group-owner-routing'
 
 const baseGroup: ProjectGroup = {
   id: 'group',
@@ -49,5 +52,17 @@ describe('project groups available to a repo', () => {
     const localGroup = { ...baseGroup, executionHostId: 'local' as const }
 
     expect(filterProjectGroupsForRepo([localGroup], repo)).toEqual([localGroup])
+  })
+
+  it('requires host labels only when projects span group catalogs', () => {
+    const localRepo = { ...baseRepo, executionHostId: 'local' as const }
+    const directSshRepo = { ...baseRepo, id: 'ssh', connectionId: 'workstation' }
+    const workRepo = { ...baseRepo, id: 'work', executionHostId: 'runtime:work' as const }
+    const homeRepo = { ...baseRepo, id: 'home', executionHostId: 'runtime:home' as const }
+
+    expect(hasMultipleProjectGroupCatalogHosts([localRepo, directSshRepo])).toBe(false)
+    expect(hasMultipleProjectGroupCatalogHosts([workRepo])).toBe(false)
+    expect(hasMultipleProjectGroupCatalogHosts([workRepo, homeRepo])).toBe(true)
+    expect(hasMultipleProjectGroupCatalogHosts([localRepo, workRepo])).toBe(true)
   })
 })

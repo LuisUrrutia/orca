@@ -384,6 +384,7 @@ export function renderWorktreeSectionHeaderRow(args: {
             <RepoHeaderProjectActionsMenu
               repo={row.repo}
               label={row.label}
+              projectGroupHostLabel={row.projectGroupHostLabel}
               projectGroups={ctx.projectGroups}
               actions={ctx.projectActions}
             />

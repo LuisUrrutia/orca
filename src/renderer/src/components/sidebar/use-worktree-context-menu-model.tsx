@@ -32,22 +32,13 @@ import { useWorktreeContextMenuCommands } from './use-worktree-context-menu-comm
 import { useWorktreeParentPickerTransition } from './use-worktree-parent-picker-transition'
 import { useWorktreeContextMenuSecondaryActions } from './use-worktree-context-menu-secondary-actions'
 import { filterProjectGroupsForRepo } from '@/store/slices/project-group-owner-routing'
-
-export type WorktreeContextMenuProps = {
-  worktree: Worktree
-  children: React.ReactNode
-  contentClassName?: string
-  selectedWorktrees?: readonly Worktree[]
-  onContextMenuSelect?: (event: React.MouseEvent<HTMLElement>) => readonly Worktree[]
-  onAssignWorkspaceStatus?: (worktreeIds: readonly string[], status: string) => void
-  onOpenChange?: (open: boolean) => void
-  onLifecycleComplete?: () => void
-}
+import type { WorktreeContextMenuProps } from './worktree-context-menu-props'
 
 export function useWorktreeContextMenuModel({
   worktree,
   children,
   contentClassName,
+  projectGroupHostLabel,
   selectedWorktrees,
   onContextMenuSelect,
   onAssignWorkspaceStatus,
@@ -404,6 +395,7 @@ export function useWorktreeContextMenuModel({
     onContextMenuSelect,
     parentPicker,
     parentPickerOpen,
+    projectGroupHostLabel,
     projectGroups: repo ? filterProjectGroupsForRepo(projectGroups, repo) : [],
     ptyIdsByTabId,
     removesProject,
