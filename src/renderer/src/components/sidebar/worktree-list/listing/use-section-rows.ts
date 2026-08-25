@@ -142,8 +142,8 @@ export function useSidebarSectionRows(args: SectionRowsArgs) {
     [hostOptions]
   )
   const showProjectGroupHostLabels = useMemo(
-    () => hasMultipleProjectGroupCatalogHosts(repos),
-    [repos]
+    () => hasMultipleProjectGroupCatalogHosts(args.visibleReposForRows),
+    [args.visibleReposForRows]
   )
 
   const rows: Row[] = useMemo(

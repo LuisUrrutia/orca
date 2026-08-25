@@ -20,11 +20,14 @@ export function getProjectGroupMenuHostLabel(
 
 export function getMoveToGroupMenuLabel(hostLabel?: string | null): string {
   if (!hostLabel) {
-    return translate('auto.components.sidebar.project-group-menu-label.4a08fb55f2', 'Move to group')
+    return translate(
+      'auto.components.sidebar.project-group-menu-label.moveToGroup',
+      'Move to group'
+    )
   }
   return translate(
-    'auto.components.sidebar.project-group-menu-label.16bc925de6',
-    'Move to group: {{value0}}',
-    { value0: hostLabel }
+    'auto.components.sidebar.project-group-menu-label.moveToGroupForHost',
+    'Move to group: {{hostLabel}}',
+    { hostLabel }
   )
 }

@@ -6246,9 +6246,9 @@
           "retained": "Existing worktrees are kept until a scan succeeds. Click to retry."
         },
         "project-group-menu-label": {
-          "4a08fb55f2": "Move to group",
-          "16bc925de6": "Move to group: {{value0}}",
-          "local": "Local"
+          "local": "Local",
+          "moveToGroup": "Move to group",
+          "moveToGroupForHost": "Move to group: {{hostLabel}}"
         },
         "project-group-menu-actions": {
           "createFailed": "Failed to create group",
