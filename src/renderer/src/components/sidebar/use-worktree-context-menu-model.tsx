@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useAppStore } from '@/store'
-import { useAllWorktrees, useRepoById, useRepoMap, useWorktreeMap } from '@/store/selectors'
+import { useAllWorktrees, useRepoForWorktree, useRepoMap, useWorktreeMap } from '@/store/selectors'
 import type { Worktree } from '../../../../shared/worktree/types'
 import {
   getCyclicProjectedWorktreeLineageIds,
@@ -63,7 +63,7 @@ export function useWorktreeContextMenuModel({
   const projectGroups = useAppStore((s) => s.projectGroups)
   const createProjectGroup = useAppStore((s) => s.createProjectGroup)
   const moveProjectToGroup = useAppStore((s) => s.moveProjectToGroup)
-  const repo = useRepoById(worktree.repoId)
+  const repo = useRepoForWorktree(worktree)
   const deleteState = useAppStore((s) =>
     getDeleteStateForWorktreeHost(worktree, s.deleteStateByWorktreeId)
   )
