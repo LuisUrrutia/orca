@@ -31,4 +31,30 @@ describe('explicitBareRepositoryRetryArgs', () => {
 
     expect(args).toBeNull()
   })
+
+  it('finds an explicit gitdir after global options with values', () => {
+    const error = Object.assign(new Error('git failed'), {
+      stderr: "fatal: cannot use bare repository '/repo.git' (safe.bareRepository is 'explicit')"
+    })
+
+    const args = explicitBareRepositoryRetryArgs(
+      ['-C', 'repo', '-c', 'core.fsmonitor=false', '--git-dir', '.', 'status'],
+      error
+    )
+
+    expect(args).toBeNull()
+  })
+
+  it.each([
+    ['rev-parse', '--git-dir', '--git-common-dir'],
+    ['ls-files', '--', '--git-dir=fixture']
+  ])('retries when --git-dir appears after the subcommand', (...args) => {
+    const error = Object.assign(new Error('git failed'), {
+      stderr: "fatal: cannot use bare repository '/repo.git' (safe.bareRepository is 'explicit')"
+    })
+
+    const retryArgs = explicitBareRepositoryRetryArgs(args, error)
+
+    expect(retryArgs).toEqual(['--git-dir=.', ...args])
+  })
 })
