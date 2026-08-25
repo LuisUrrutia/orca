@@ -2,7 +2,6 @@ import { useCallback } from 'react'
 import type { useAppStore } from '@/store'
 import type { Repo } from '../../../../shared/repo-types'
 import type { WorkspaceStatusDefinition, Worktree } from '../../../../shared/worktree/types'
-import { getRepoExecutionHostId } from '../../../../shared/execution-host'
 import {
   createWorktreeContextMenuDeleteIntent,
   deferWorktreeContextMenuDeleteIntent
@@ -14,6 +13,11 @@ import {
   planWorkspaceStatusAssignment,
   preserveDeleteSiblingPosition
 } from './worktree-context-menu-policy'
+import {
+  createProjectGroupFromRepo,
+  moveProjectToGroupFromMenu,
+  removeProjectFromGroupFromMenu
+} from './project-group-menu-actions'
 
 export function useWorktreeContextMenuCommands(args: {
   activeContextWorktrees: readonly Worktree[]
@@ -71,11 +75,7 @@ export function useWorktreeContextMenuCommands(args: {
       if (!args.repo) {
         return
       }
-      const hostId = getRepoExecutionHostId(args.repo)
-      const group = await args.createProjectGroup(name, { hostId })
-      if (group) {
-        await args.moveProjectToGroup(args.repo.id, group.id, undefined, { hostId })
-      }
+      await createProjectGroupFromRepo(args.repo, name, args)
     },
     [args]
   )
@@ -84,17 +84,13 @@ export function useWorktreeContextMenuCommands(args: {
       if (!args.repo || args.repo.projectGroupId === groupId) {
         return
       }
-      void args.moveProjectToGroup(args.repo.id, groupId, undefined, {
-        hostId: getRepoExecutionHostId(args.repo)
-      })
+      void moveProjectToGroupFromMenu(args.repo, groupId, args.moveProjectToGroup)
     },
     [args]
   )
   const handleRemoveProjectFromGroup = useCallback(() => {
     if (args.repo) {
-      void args.moveProjectToGroup(args.repo.id, null, undefined, {
-        hostId: getRepoExecutionHostId(args.repo)
-      })
+      void removeProjectFromGroupFromMenu(args.repo, args.moveProjectToGroup)
     }
   }, [args])
   const handleAssignWorkspaceStatus = useCallback(

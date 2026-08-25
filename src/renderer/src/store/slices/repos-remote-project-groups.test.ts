@@ -52,7 +52,7 @@ beforeEach(() => {
 })
 
 describe('paired runtime project group routing', () => {
-  it('creates and groups a paired runtime repo through its owning host', async () => {
+  it('creates and groups a paired runtime repo through its owner instead of the active host', async () => {
     runtimeEnvironmentCall.mockImplementation(async ({ method }) => ({
       id: `rpc-${method}`,
       ok: true,
@@ -67,7 +67,7 @@ describe('paired runtime project group routing', () => {
     )
     const store = createTestStore()
     store.setState({
-      settings: { activeRuntimeEnvironmentId: null } as never,
+      settings: { activeRuntimeEnvironmentId: 'env-2' } as never,
       repos: [{ ...remoteRepo, executionHostId: 'runtime:env-1' }]
     })
 
@@ -86,6 +86,15 @@ describe('paired runtime project group routing', () => {
         executionHostId: 'runtime:env-1'
       }
     ])
+    expect(runtimeEnvironmentCall).toHaveBeenCalledWith(
+      expect.objectContaining({ selector: 'env-1', method: 'projectGroup.create' })
+    )
+    expect(runtimeEnvironmentCall).toHaveBeenCalledWith(
+      expect.objectContaining({ selector: 'env-1', method: 'projectGroup.moveProject' })
+    )
+    expect(runtimeEnvironmentCall).not.toHaveBeenCalledWith(
+      expect.objectContaining({ selector: 'env-2' })
+    )
   })
 
   it('rejects a client-owned group for a paired runtime repo', async () => {
