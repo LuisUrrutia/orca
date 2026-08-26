@@ -284,7 +284,7 @@ describe('getPRForBranch', () => {
     )
   })
 
-  it('hydrates action-required checks when the exact PR rollup is empty and unstable', async () => {
+  it('hydrates action-required checks when the exact PR rollup is partial and unstable', async () => {
     getOwnerRepoMock.mockResolvedValue({ owner: 'acme', repo: 'widgets' })
     ghExecFileAsyncMock.mockImplementation(async (args: string[]) => {
       if (args[0] === 'pr') {
@@ -294,7 +294,15 @@ describe('getPRForBranch', () => {
             title: 'Approval required',
             state: 'OPEN',
             url: 'https://github.com/acme/widgets/pull/99',
-            statusCheckRollup: [],
+            statusCheckRollup: [
+              {
+                __typename: 'CheckRun',
+                name: 'track-community-pr',
+                status: 'COMPLETED',
+                conclusion: 'SUCCESS',
+                detailsUrl: 'https://github.com/acme/widgets/actions/runs/1'
+              }
+            ],
             updatedAt: '2026-08-26T10:00:00Z',
             isDraft: false,
             mergeable: 'MERGEABLE',

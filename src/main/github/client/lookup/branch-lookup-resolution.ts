@@ -23,7 +23,7 @@ import {
 import { lookupPRByBranchName } from './pr-branch-lookup'
 import { lookupPRByNumber } from './pr-number-lookup'
 import { derivePRRefreshData } from './branch-lookup-derived-data'
-import { hydrateMissingUnstablePRCheckRollup } from './missing-unstable-pr-check-rollup'
+import { hydrateUnstablePRCheckRollup } from './unstable-pr-check-rollup'
 import { assemblePRRefreshFoundOutcome } from './pr-refresh-outcome-assembly'
 import { shouldRetryTrackedUpstreamBranch } from './tracked-upstream-cache'
 import { getTrackedUpstreamBranch } from './tracked-upstream-branch'
@@ -270,7 +270,7 @@ export async function resolvePRForBranchOutcome(input: {
     return { kind: 'no-pr', fetchedAt: Date.now() }
   }
 
-  data = await hydrateMissingUnstablePRCheckRollup(data, {
+  data = await hydrateUnstablePRCheckRollup(data, {
     repoPath,
     dataRepo,
     connectionId,
