@@ -1,3 +1,5 @@
+import type { ExplicitBareRepositoryReadState } from '../../../shared/git-bare-repository-command'
+
 // Why: cap execFile output to prevent an uncatchable V8 string overflow; match relay MAX_GIT_BUFFER.
 export const DEFAULT_GIT_MAX_BUFFER = 10 * 1024 * 1024
 
@@ -21,4 +23,5 @@ export type GitExecOptions = {
   /** Scheduler priority for this child; status is the safe default. */
   admissionTier?: GitAdmissionTier
   allowExplicitBareRepositoryRetry?: boolean
+  explicitBareRepositoryReadState?: ExplicitBareRepositoryReadState
 }

@@ -3,6 +3,7 @@ import { mkdir, mkdtemp, realpath, rm, symlink, writeFile } from 'node:fs/promis
 import { tmpdir } from 'node:os'
 import * as path from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { runGitFixture } from '../../shared/git-process-test-fixture'
 import type * as GitRunner from './runner'
 
 // Why: spy on the git runner so we can count rev-parse invocations while still
@@ -81,7 +82,7 @@ async function createBareRepo(): Promise<string> {
   const root = await mkdtemp(path.join(tmpdir(), 'orca-bare-worktree-'))
   tempRoots.push(root)
   const repoPath = path.join(root, 'repo.git')
-  execFileSync('git', ['init', '--bare', '--quiet', repoPath])
+  await runGitFixture(root, ['init', '--bare', '--quiet', repoPath])
   return realpath(repoPath)
 }
 

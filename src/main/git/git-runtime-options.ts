@@ -1,9 +1,23 @@
 import type { GitAdmissionTier } from './command-runner/git-exec-options'
+import {
+  createExplicitBareRepositoryReadState,
+  type ExplicitBareRepositoryReadState
+} from '../../shared/git-bare-repository-command'
 
 export type GitRuntimeOptions = {
   wslDistro?: string
   signal?: AbortSignal
   admissionTier?: GitAdmissionTier
+}
+
+export type GitExplicitBareRepositoryReadOptions = GitRuntimeOptions & {
+  explicitBareRepositoryReadState: ExplicitBareRepositoryReadState
+}
+
+export function createGitExplicitBareRepositoryReadOptions(
+  options: GitRuntimeOptions
+): GitExplicitBareRepositoryReadOptions {
+  return { ...options, explicitBareRepositoryReadState: createExplicitBareRepositoryReadState() }
 }
 
 export function gitOptionsForWorktree(
@@ -35,4 +49,18 @@ export function gitReadOptionsForWorktree(
   preferWslDirectGit: true
 } {
   return { ...gitOptionsForWorktree(cwd, options), preferWslDirectGit: true }
+}
+
+export function gitExplicitBareRepositoryReadOptionsForWorktree(
+  cwd: string,
+  options: GitExplicitBareRepositoryReadOptions
+): ReturnType<typeof gitReadOptionsForWorktree> & {
+  allowExplicitBareRepositoryRetry: true
+  explicitBareRepositoryReadState: ExplicitBareRepositoryReadState
+} {
+  return {
+    ...gitReadOptionsForWorktree(cwd, options),
+    allowExplicitBareRepositoryRetry: true,
+    explicitBareRepositoryReadState: options.explicitBareRepositoryReadState
+  }
 }

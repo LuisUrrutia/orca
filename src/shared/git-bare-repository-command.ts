@@ -39,6 +39,16 @@ function hasExplicitGitDir(args: readonly string[]): boolean {
   return false
 }
 
+export type ExplicitBareRepositoryReadState = { useExplicitGitDir: boolean }
+
+export function createExplicitBareRepositoryReadState(): ExplicitBareRepositoryReadState {
+  return { useExplicitGitDir: false }
+}
+
+function explicitBareRepositoryArgs(args: readonly string[]): string[] {
+  return hasExplicitGitDir(args) ? [...args] : ['--git-dir=.', ...args]
+}
+
 export function explicitBareRepositoryRetryArgs(
   args: readonly string[],
   error: unknown
@@ -51,13 +61,17 @@ export function explicitBareRepositoryRetryArgs(
   ) {
     return null
   }
-  return ['--git-dir=.', ...args]
+  return explicitBareRepositoryArgs(args)
 }
 
 export async function runWithExplicitBareRepositoryRetry<T>(
   args: readonly string[],
-  run: (commandArgs: string[]) => Promise<T>
+  run: (commandArgs: string[]) => Promise<T>,
+  state?: ExplicitBareRepositoryReadState
 ): Promise<T> {
+  if (state?.useExplicitGitDir) {
+    return run(explicitBareRepositoryArgs(args))
+  }
   try {
     return await run([...args])
   } catch (error) {
@@ -65,6 +79,10 @@ export async function runWithExplicitBareRepositoryRetry<T>(
     if (!retryArgs) {
       throw error
     }
-    return run(retryArgs)
+    const result = await run(retryArgs)
+    if (state) {
+      state.useExplicitGitDir = true
+    }
+    return result
   }
 }

@@ -19,13 +19,21 @@ vi.mock('../diagnostics/main-thread-churn-probe', () => ({ recordSubprocessSpawn
 
 import { gitExecFileAsync, gitExecFileAsyncBuffer } from './runner'
 import { _resetGitAdmissionForTests } from './command-runner/git-subprocess-admission'
+import {
+  resetWslGitReadEnvironmentForTests,
+  seedWslGitReadEnvironmentForTests
+} from './wsl-git-read-environment'
 
 afterEach(() => _resetGitAdmissionForTests())
-import { resetWslGitReadEnvironmentForTests } from './wsl-git-read-environment'
 
 const DISTRO = 'Ubuntu'
 const WSL_CWD = String.raw`\\wsl.localhost\Ubuntu\home\alice\repo`
 const BANNER = 'To run a command as administrator (user "root"), use "sudo <command>".\n\n'
+const LOGIN_ENVIRONMENT = {
+  gitPath: '/home/alice/bin/git',
+  home: '/home/alice',
+  path: '/home/alice/bin:/usr/bin:/bin'
+}
 
 function createMockChild(): EventEmitter & { stdout: EventEmitter; stderr: EventEmitter } {
   const child = new EventEmitter() as EventEmitter & {
@@ -126,6 +134,37 @@ describe('WSL login-shell reads are fenced', () => {
       .filter((script) => script.includes("'show'"))
     expect(gitReadScripts).toHaveLength(2)
     expect(gitReadScripts[1]).toContain('--git-dir=.')
+  })
+
+  it('retries a strict bare text read directly without a redundant login shell', async () => {
+    seedWslGitReadEnvironmentForTests(DISTRO, LOGIN_ENVIRONMENT)
+    const errorText =
+      "fatal: cannot use bare repository '/repo.git' (safe.bareRepository is 'explicit')"
+    execFileMock.mockImplementation((_command, args, _options, callback) => {
+      const commandArgs = args as string[]
+      if (!commandArgs.includes('--git-dir=.')) {
+        queueMicrotask(() =>
+          callback?.(Object.assign(new Error('git failed'), { code: 128 }), '', errorText)
+        )
+        return createMockChild()
+      }
+      queueMicrotask(() => callback?.(null, 'worktree output', ''))
+      return createMockChild()
+    })
+
+    await expect(
+      gitExecFileAsync(['worktree', 'list', '--porcelain'], {
+        cwd: WSL_CWD,
+        wslDistro: DISTRO,
+        allowExplicitBareRepositoryRetry: true
+      })
+    ).resolves.toEqual({ stdout: 'worktree output', stderr: '' })
+
+    expect(execFileMock).toHaveBeenCalledTimes(2)
+    expect(execFileMock.mock.calls.map((call) => call[1])).toEqual([
+      expect.arrayContaining(['--exec', LOGIN_ENVIRONMENT.gitPath, 'worktree']),
+      expect.arrayContaining(['--exec', LOGIN_ENVIRONMENT.gitPath, '--git-dir=.', 'worktree'])
+    ])
   })
 
   /** Answer the core.sshCommand probe with `configured`, and any other command with ok. */

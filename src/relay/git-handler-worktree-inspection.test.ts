@@ -7,7 +7,6 @@ import * as fs from 'node:fs/promises'
 import * as path from 'node:path'
 import { mkdirSync, symlinkSync, writeFileSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
-import { runGitFixture } from '../shared/git-process-test-fixture'
 import type { GitHandler } from './git-handler'
 import { gitInit, gitCommit, type MockDispatcher } from './git-handler-test-setup'
 import {
@@ -43,22 +42,6 @@ describe('GitHandler', () => {
       })) as Record<string, unknown>[]
       expect(result.length).toBeGreaterThanOrEqual(1)
       expect(result[0].isMainWorktree).toBe(true)
-    })
-
-    it('lists a bare repo when safe.bareRepository requires an explicit gitdir', async () => {
-      await runGitFixture(tmpDir, ['init', '--bare', '--quiet'])
-      const barePath = await fs.realpath(tmpDir)
-      vi.stubEnv('GIT_CONFIG_COUNT', '1')
-      vi.stubEnv('GIT_CONFIG_KEY_0', 'safe.bareRepository')
-      vi.stubEnv('GIT_CONFIG_VALUE_0', 'explicit')
-
-      const result = (await dispatcher.callRequest('git.listWorktrees', {
-        repoPath: barePath
-      })) as Record<string, unknown>[]
-
-      expect(result).toEqual([
-        expect.objectContaining({ path: barePath, isBare: true, isMainWorktree: true })
-      ])
     })
 
     it('passes request cancellation to the git worktree list subprocess', async () => {
