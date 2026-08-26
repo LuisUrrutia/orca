@@ -9,7 +9,7 @@ const gitlabReview: WorktreeCardPrDisplay = {
   number: 456,
   title: 'Review me',
   state: 'open',
-  status: 'pending'
+  status: 'success'
 }
 
 describe('ReviewIcon', () => {
@@ -87,6 +87,48 @@ describe('ReviewIcon', () => {
     expect(failing).toContain('text-rose-500/85')
   })
 
+  it('renders a neutral spinner when requested by loading card metadata', () => {
+    const loading = renderToStaticMarkup(
+      <ReviewIcon
+        review={{
+          provider: 'github',
+          number: 1,
+          title: 'Loading PR...',
+          isLoading: true
+        }}
+        className="size-3"
+        variant="generic"
+        showLoadingSpinner
+      />
+    )
+
+    expect(loading).toContain('lucide-loader-circle')
+    expect(loading).toContain('animate-spin')
+    expect(loading).toContain('text-muted-foreground')
+    expect(loading).not.toContain('text-amber-500/85')
+    expect(loading).not.toContain('viewBox="0 0 16 16"')
+  })
+
+  it('keeps the pending review glyph on other review surfaces', () => {
+    const pending = renderToStaticMarkup(
+      <ReviewIcon
+        review={{
+          provider: 'github',
+          number: 1,
+          title: 'Checking',
+          state: 'open',
+          status: 'pending'
+        }}
+        className="size-3"
+        variant="generic"
+      />
+    )
+
+    expect(pending).toContain('viewBox="0 0 16 16"')
+    expect(pending).not.toContain('lucide-loader-circle')
+    expect(pending).not.toContain('animate-spin')
+  })
+
   it('renders action-required checks in amber instead of failure red or passing green', () => {
     const actionRequired = renderToStaticMarkup(
       <ReviewIcon
@@ -103,6 +145,8 @@ describe('ReviewIcon', () => {
     )
 
     expect(actionRequired).toContain('text-amber-500/85')
+    expect(actionRequired).not.toContain('lucide-loader-circle')
+    expect(actionRequired).not.toContain('animate-spin')
     expect(actionRequired).not.toContain('text-rose-500/85')
     expect(actionRequired).not.toContain('text-emerald-500/80')
   })

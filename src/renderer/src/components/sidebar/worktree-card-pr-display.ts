@@ -29,7 +29,7 @@ type LinkedReviewNumbers = {
   linkedGiteaPR: number | null
 }
 
-export type WorktreeCardPrDisplay =
+export type WorktreeCardPrDisplay = (
   | HostedReviewInfo
   | {
       provider: LinkedReviewMetadataProvider
@@ -40,6 +40,7 @@ export type WorktreeCardPrDisplay =
       status?: HostedReviewInfo['status']
       checksPresentationStatus?: CheckPresentationStatus
     }
+) & { isLoading?: boolean }
 
 type WorktreeCardPrDisplayOptions = {
   reviewHintKey?: string
@@ -77,7 +78,8 @@ function makeLinkedReviewFallback(
     number,
     // Why: linked review metadata is persisted before provider details are cached.
     // Keep the row visible on cold first render while the lookup catches up.
-    title: review === null ? `${label} details unavailable` : `Loading ${label}...`
+    title: review === null ? `${label} details unavailable` : `Loading ${label}...`,
+    ...(review === undefined ? { isLoading: true } : {})
   }
 }
 

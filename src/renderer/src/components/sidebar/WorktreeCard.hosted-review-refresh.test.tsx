@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { act } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import type { GlobalSettings } from '../../../../shared/global-settings-types'
 import type { Repo } from '../../../../shared/repo-types'
 import type { WorktreeCardProperty } from '../../../../shared/ui-chrome-types'
 import type { Worktree } from '../../../../shared/worktree/types'
@@ -14,6 +15,8 @@ const openModal = vi.fn()
 const updateWorktreeMeta = vi.fn()
 
 let worktreeCardProperties: WorktreeCardProperty[] = ['status']
+let hostedReviewCache: Record<string, unknown> = {}
+let settings: Partial<GlobalSettings> | null = null
 let root: Root | null = null
 let container: HTMLDivElement | null = null
 
@@ -25,19 +28,13 @@ vi.mock('@/store', () => ({
       fetchIssue,
       fetchLinearIssue,
       gitConflictOperationByWorktree: {},
-      hostedReviewCache: {
-        'local::repo-1::feature/branch': {
-          data: null,
-          fetchedAt: Date.now(),
-          linkedReviewHintKey: ''
-        }
-      },
+      hostedReviewCache,
       issueCache: {},
       linearIssueCache: {},
       openModal,
       projectGroups: [],
       remoteBranchConflictByWorktreeId: {},
-      settings: { experimentalNewWorktreeCardStyle: true },
+      settings,
       sshConnectionStates: new Map(),
       sshTargetLabels: new Map(),
       updateWorktreeMeta,
@@ -114,6 +111,14 @@ describe('WorktreeCard hosted review refresh', () => {
     vi.useFakeTimers()
     vi.clearAllMocks()
     worktreeCardProperties = ['status']
+    settings = { experimentalNewWorktreeCardStyle: true }
+    hostedReviewCache = {
+      'local::repo-1::feature/branch': {
+        data: null,
+        fetchedAt: Date.now(),
+        linkedReviewHintKey: ''
+      }
+    }
     container = document.createElement('div')
     document.body.appendChild(container)
     root = createRoot(container)
@@ -168,5 +173,49 @@ describe('WorktreeCard hosted review refresh', () => {
     })
 
     expect(fetchHostedReviewForBranch).not.toHaveBeenCalled()
+  })
+
+  it('shows a spinner in the sidebar PR badge while linked PR details load', async () => {
+    worktreeCardProperties = ['pr']
+    hostedReviewCache = {}
+    settings = { experimentalNewWorktreeCardStyle: false }
+    const { default: WorktreeCard } = await import('./WorktreeCard')
+
+    act(() => {
+      root?.render(
+        <WorktreeCard
+          worktree={makeWorktree({ linkedPR: 456 })}
+          repo={makeRepo()}
+          isActive={false}
+        />
+      )
+    })
+
+    expect(container?.innerHTML).toContain('Linked PR #456')
+    expect(container?.innerHTML).toContain('lucide-loader-circle')
+    expect(container?.innerHTML).toContain('animate-spin')
+    expect(container?.innerHTML).toContain('text-muted-foreground')
+    expect(container?.innerHTML).not.toContain('viewBox="0 0 16 16"')
+  })
+
+  it('stops the sidebar spinner when linked PR details are unavailable', async () => {
+    worktreeCardProperties = ['pr']
+    settings = { experimentalNewWorktreeCardStyle: false }
+    const { default: WorktreeCard } = await import('./WorktreeCard')
+
+    act(() => {
+      root?.render(
+        <WorktreeCard
+          worktree={makeWorktree({ linkedPR: 456 })}
+          repo={makeRepo()}
+          isActive={false}
+        />
+      )
+    })
+
+    expect(container?.innerHTML).toContain('Linked PR #456')
+    expect(container?.innerHTML).toContain('viewBox="0 0 16 16"')
+    expect(container?.innerHTML).not.toContain('lucide-loader-circle')
+    expect(container?.innerHTML).not.toContain('animate-spin')
   })
 })
