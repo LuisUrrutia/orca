@@ -54,6 +54,12 @@ export type HostedReviewInfo = {
   conflictSummary?: PRConflictSummary
 }
 
+export function getHostedReviewCheckPresentationStatus(
+  review: Pick<HostedReviewInfo, 'checksPresentationStatus'> & { status?: CheckStatus }
+): CheckPresentationStatus | undefined {
+  return review.checksPresentationStatus ?? review.status
+}
+
 export type HostedReviewForBranchArgs = {
   repoPath: string
   repoId?: string

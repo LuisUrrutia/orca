@@ -29,13 +29,13 @@ export async function hydrateUnstablePRCheckRollup(
   if (
     data.mergeStateStatus?.toUpperCase() !== 'UNSTABLE' ||
     mapPRState(data.state, data.isDraft) !== 'open' ||
-    (data.statusCheckRollup.length > 0 && rollupStatus !== 'success')
+    rollupStatus === 'failure' ||
+    rollupStatus === 'action_required'
   ) {
     return data
   }
 
-  const neutralFallback =
-    data.statusCheckRollup.length > 0 ? { ...data, statusCheckRollup: [] } : data
+  const neutralFallback = rollupStatus === 'success' ? { ...data, statusCheckRollup: [] } : data
   try {
     const checks = await loadChecks()
     return checks.length > 0 ? { ...data, statusCheckRollup: checks } : neutralFallback

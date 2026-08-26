@@ -124,7 +124,7 @@ export function getProviderChecksLabel(summary: ProviderCheckSummary | undefined
     return `${failureCount} failing`
   }
   if ((summary.actionRequired ?? 0) > 0) {
-    return `${summary.actionRequired} action required`
+    return `Action required: ${summary.actionRequired}`
   }
   if (summary.pending > 0) {
     return `${summary.pending} pending`

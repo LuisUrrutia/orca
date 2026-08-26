@@ -1,4 +1,5 @@
 import React from 'react'
+import { getHostedReviewCheckPresentationStatus } from '../../../../shared/hosted-review'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -46,7 +47,7 @@ export function WorktreeCardReviewDetailSection({
 
   const reviewLabel = getReviewLabel(review)
   const reviewProvider = getProviderName(review)
-  const checksStatus = review.checksPresentationStatus ?? review.status
+  const checksStatus = getHostedReviewCheckPresentationStatus(review)
   const moreActionsLabel = translate(
     'auto.components.sidebar.WorktreeCardMeta.dbe2d18972',
     'More {{value0}} actions',

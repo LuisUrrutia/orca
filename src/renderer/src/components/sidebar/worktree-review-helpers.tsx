@@ -2,6 +2,7 @@ import { createElement } from 'react'
 import { GitMerge } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { getReviewStateIcon } from '@/components/github/review-state-presentation'
+import { getHostedReviewCheckPresentationStatus } from '../../../../shared/hosted-review'
 import { PullRequestIcon } from './WorktreeCardHelpers'
 import type { WorktreeCardPrDisplay } from './worktree-card-pr-display'
 
@@ -31,7 +32,7 @@ function getCheckTone(review: WorktreeCardPrDisplay): string | null {
   if (review.state && review.state !== 'open') {
     return null
   }
-  const status = review.checksPresentationStatus ?? review.status
+  const status = getHostedReviewCheckPresentationStatus(review)
   if (status === 'failure') {
     return 'text-rose-500/85'
   }

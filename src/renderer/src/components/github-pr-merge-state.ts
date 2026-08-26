@@ -1,4 +1,5 @@
 import type {
+  CheckPresentationStatus,
   CheckStatus,
   PRMergeableState,
   PRReviewDecision,
@@ -16,6 +17,7 @@ export type GitHubPRMergeStateInput = {
   mergeStateStatus?: string | null
   reviewDecision?: PRReviewDecision | null
   checksStatus?: CheckStatus
+  checksPresentationStatus?: CheckPresentationStatus
   checksSummary?: ProviderCheckSummary
   autoMergeEnabled?: boolean
   autoMergeAllowed?: boolean | null
@@ -48,7 +50,7 @@ function checksState(
   if (item.checksSummary) {
     return getProviderChecksPresentationState(item.checksSummary)
   }
-  return item.checksStatus
+  return item.checksPresentationStatus ?? item.checksStatus
 }
 
 function checksPassed(item: GitHubPRMergeStateInput): boolean {

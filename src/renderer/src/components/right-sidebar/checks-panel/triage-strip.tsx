@@ -9,6 +9,7 @@ import {
   Sparkles
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { getActionRequiredCheckCountLabel } from '@/components/pr-check-counts'
 import type { PRCheckDetail } from '../../../../../shared/github/check-types'
 import type { ConflictReview } from './conflict-summary'
 import {
@@ -52,6 +53,7 @@ export function PRTriageStrip({
   const failingCount = getProviderCheckFailureCount(summary)
   const actionRequiredCount = summary.actionRequired ?? 0
   const pendingCount = summary.pending
+  const providerName = reviewKind === 'MR' ? 'GitLab' : 'GitHub'
 
   if (resolvedReview?.mergeable === 'CONFLICTING') {
     return (
@@ -113,16 +115,13 @@ export function PRTriageStrip({
           <AlertTriangle className="size-3.5 shrink-0 text-amber-500" />
           <div className="min-w-0 flex-1">
             <div className="truncate text-[11px] font-medium text-foreground">
-              {translate(
-                'auto.components.pr-check-counts.needsActionChip',
-                '{{value0}} action required',
-                { value0: actionRequiredCount }
-              )}
+              {getActionRequiredCheckCountLabel(actionRequiredCount)}
             </div>
             <div className="truncate text-[10px] text-muted-foreground">
               {translate(
-                'auto.components.right.sidebar.checks.panel.content.actionRequiredHint',
-                'Needs a manual action on GitHub (e.g. approving the run) to unblock merging.'
+                'auto.components.right.sidebar.checks.panel.content.actionRequiredProviderHint',
+                'Needs a manual action on {{value0}} to unblock merging.',
+                { value0: providerName }
               )}
             </div>
           </div>
