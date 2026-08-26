@@ -120,8 +120,8 @@ export function PRTriageStrip({
             <div className="truncate text-[10px] text-muted-foreground">
               {translate(
                 'auto.components.right.sidebar.checks.panel.content.actionRequiredProviderHint',
-                'Needs a manual action on {{value0}} to unblock merging.',
-                { value0: providerName }
+                'Needs a manual action on {{providerName}} to unblock merging.',
+                { providerName }
               )}
             </div>
           </div>

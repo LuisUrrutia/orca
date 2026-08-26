@@ -1,4 +1,5 @@
 import React from 'react'
+import { translate } from '@/i18n/i18n'
 import type { GitConflictOperation } from '../../../../shared/git-status-types'
 import type { CheckPresentationStatus } from '../../../../shared/github/pull-request-types'
 import type { TerminalTab } from '../../../../shared/terminal-tab-types'
@@ -18,7 +19,10 @@ export function checksLabel(status: CheckPresentationStatus): string {
     case 'pending':
       return 'Pending'
     case 'action_required':
-      return 'Action required'
+      return translate(
+        'auto.components.sidebar.WorktreeCardHelpers.actionRequiredCheckStatus',
+        'Action required'
+      )
     case 'neutral':
       return ''
   }
