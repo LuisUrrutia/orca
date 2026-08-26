@@ -1,4 +1,4 @@
-import type { ProviderCheckSummary } from './github/pull-request-types'
+import type { CheckPresentationStatus, ProviderCheckSummary } from './github/pull-request-types'
 
 export type CheckOutcome = 'passed' | 'failed' | 'action_required' | 'pending' | 'neutral'
 
@@ -90,7 +90,7 @@ export function summarizeProviderChecks(
   }
 }
 
-export type ProviderCheckPresentationState = ProviderCheckSummary['state'] | 'action_required'
+export type ProviderCheckPresentationState = CheckPresentationStatus | 'none'
 
 export function getProviderCheckFailureCount(summary: ProviderCheckSummary): number {
   return Math.max(0, summary.failed - (summary.actionRequired ?? 0))
