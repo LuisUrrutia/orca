@@ -266,6 +266,6 @@ describe('provider check classification parity', () => {
     expect(getProviderChecksPresentationState(failureAndAction)).toBe('failure')
     expect(getProviderChecksLabel(failureAndAction)).toBe('1 failing')
     expect(getProviderChecksPresentationState(actionAndPending)).toBe('action_required')
-    expect(getProviderChecksLabel(actionAndPending)).toBe('1 action required')
+    expect(getProviderChecksLabel(actionAndPending)).toBe('Action required: 1')
   })
 })

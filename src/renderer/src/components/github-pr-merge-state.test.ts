@@ -212,6 +212,30 @@ describe('presentGitHubPRMergeState', () => {
     })
   })
 
+  it('prefers the hosted-review presentation status over the legacy failure status', () => {
+    expect(
+      presentGitHubPRMergeState(
+        pr({
+          checksSummary: undefined,
+          checksStatus: 'failure',
+          checksPresentationStatus: 'action_required'
+        })
+      )
+    ).toMatchObject({
+      label: 'Action required',
+      tone: expect.stringContaining('amber')
+    })
+  })
+
+  it('falls back to the legacy failure status when an older runtime omits presentation status', () => {
+    expect(
+      presentGitHubPRMergeState(pr({ checksSummary: undefined, checksStatus: 'failure' }))
+    ).toMatchObject({
+      label: 'Checks failed',
+      tone: expect.stringContaining('rose')
+    })
+  })
+
   it('labels unresolved GitHub mergeability as checking', () => {
     expect(
       presentGitHubPRMergeState(

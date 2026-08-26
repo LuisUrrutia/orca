@@ -194,7 +194,8 @@ describe('MergeConflictNotice', () => {
       })
     )
 
-    expect(markup).toContain('1 action required')
+    expect(markup).toContain('Action required: 1')
+    expect(markup).toContain('GitHub')
     expect(markup).toContain('text-amber-500')
     expect(markup).not.toContain('failing check')
     expect(markup).not.toContain('>Fix<')
@@ -284,12 +285,31 @@ describe('ChecksList', () => {
     )
     const summaryMarkup = markup.slice(0, markup.indexOf('</button>'))
 
-    expect(summaryMarkup).toContain('2 action required')
+    expect(summaryMarkup).toContain('Action required: 2')
     expect(summaryMarkup).toContain('lucide-triangle-alert')
     expect(summaryMarkup).toContain('text-amber-500')
     expect(summaryMarkup).not.toContain('2 failing')
     expect(summaryMarkup).not.toContain('text-rose-500')
-    expect(markup.match(/Action required/g)).toHaveLength(2)
+    expect(markup.match(/Action required/g)).toHaveLength(3)
+  })
+
+  it('names GitLab in the action-required hint for merge requests', () => {
+    const markup = renderToStaticMarkup(
+      React.createElement(PRTriageStrip, {
+        review: makePR({ mergeable: 'MERGEABLE' }),
+        reviewKind: 'MR',
+        checks: [
+          { name: 'approve', status: 'completed', conclusion: 'action_required', url: null }
+        ],
+        isResolvingConflictsWithAI: false,
+        onResolveConflictsWithAI: () => {},
+        isFixingChecksWithAI: false,
+        onFixChecksWithAI: () => {}
+      })
+    )
+
+    expect(markup).toContain('Needs a manual action on GitLab')
+    expect(markup).not.toContain('Needs a manual action on GitHub')
   })
 
   // Why: a completed check with no conclusion will never resolve, so calling it pending kept an

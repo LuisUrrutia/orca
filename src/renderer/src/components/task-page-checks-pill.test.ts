@@ -55,7 +55,7 @@ describe('task page checks pill', () => {
       }
     }
 
-    expect(getChecksLabel(actionRequired)).toBe('2 action required')
+    expect(getChecksLabel(actionRequired)).toBe('Action required: 2')
     expect(getChecksPillTone(actionRequired)).toContain('amber')
     expect(getChecksLabel(mixedFailure)).toBe('1 failing')
     expect(getChecksPillTone(mixedFailure)).toContain('rose')

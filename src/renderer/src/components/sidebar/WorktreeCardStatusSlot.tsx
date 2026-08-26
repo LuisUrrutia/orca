@@ -1,5 +1,6 @@
 import React from 'react'
 import { Bell, GitBranch } from 'lucide-react'
+import { getHostedReviewCheckPresentationStatus } from '../../../../shared/hosted-review'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { translate } from '@/i18n/i18n'
 import { cn } from '@/lib/utils'
@@ -74,7 +75,7 @@ function getReviewStatusLabel(review: WorktreeCardPrDisplay): string {
   if (review.state === 'draft') {
     return `${label}: Draft`
   }
-  const status = review.checksPresentationStatus ?? review.status
+  const status = getHostedReviewCheckPresentationStatus(review)
   if (status === 'failure') {
     return `${label} checks: Failed`
   }

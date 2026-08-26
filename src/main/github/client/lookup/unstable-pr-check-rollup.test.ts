@@ -108,9 +108,33 @@ describe('hydrateUnstablePRCheckRollup', () => {
     ])
   })
 
+  it('loads a suite-only blocker while another visible check is pending', async () => {
+    const pendingCheck = { name: 'build', status: 'IN_PROGRESS', conclusion: null }
+    const loadChecks = vi.fn().mockResolvedValue([
+      pendingCheck,
+      {
+        name: 'GitHub Actions',
+        status: 'completed',
+        conclusion: 'action_required',
+        url: null
+      }
+    ])
+
+    const result = await hydrateUnstablePRCheckRollup(
+      createPullRequest({ statusCheckRollup: [pendingCheck] }),
+      lookupArgs,
+      loadChecks
+    )
+
+    expect(loadChecks).toHaveBeenCalledOnce()
+    expect(result.statusCheckRollup).toEqual([
+      pendingCheck,
+      expect.objectContaining({ conclusion: 'action_required' })
+    ])
+  })
+
   it.each([
     ['a failing rollup', { statusCheckRollup: [{ conclusion: 'failure' }] }],
-    ['a pending rollup', { statusCheckRollup: [{ status: 'IN_PROGRESS' }] }],
     ['an action-required rollup', { statusCheckRollup: [{ conclusion: 'action_required' }] }],
     ['a stable merge state', { mergeStateStatus: 'CLEAN' }],
     ['a closed PR', { state: 'CLOSED' }]
@@ -151,6 +175,21 @@ describe('hydrateUnstablePRCheckRollup', () => {
     const result = await hydrateUnstablePRCheckRollup(data, lookupArgs, loadChecks)
 
     expect(result.statusCheckRollup).toEqual([])
+    expect(warn).toHaveBeenCalledWith('Unable to hydrate unstable PR checks:', error)
+    warn.mockRestore()
+  })
+
+  it('keeps a visible pending check when detailed checks cannot be loaded', async () => {
+    const error = new Error('rate limited')
+    const loadChecks = vi.fn().mockRejectedValue(error)
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+    const data = createPullRequest({
+      statusCheckRollup: [{ name: 'build', status: 'IN_PROGRESS', conclusion: null }]
+    })
+
+    const result = await hydrateUnstablePRCheckRollup(data, lookupArgs, loadChecks)
+
+    expect(result).toBe(data)
     expect(warn).toHaveBeenCalledWith('Unable to hydrate unstable PR checks:', error)
     warn.mockRestore()
   })

@@ -10941,6 +10941,7 @@
                 "f5cf324efa": "Opciones de visualización de comentarios",
                 "5e6e5a13fa": "Vista",
                 "actionRequiredHint": "Este check requiere una acción manual en GitHub (por ejemplo, aprobar la ejecución del workflow) antes de que el merge quede desbloqueado.",
+                "actionRequiredProviderHint": "Se necesita una acción manual en {{value0}} para desbloquear el merge.",
                 "b3195cba33": "Desmarcar autor como bot",
                 "f588b46a6c": "Marcar autor como bot",
                 "e45324fbed": "No se pudieron cargar los detalles del check."
@@ -14484,7 +14485,7 @@
         "passingChip": "{{value0}} pasando",
         "failingChip": "{{value0}} fallando",
         "pendingChip": "{{value0}} pendiente",
-        "needsActionChip": "{{value0}} requiere acción",
+        "needsActionChip": "Acción requerida: {{value0}}",
         "unresolvedChip": "{{value0}} sin resolver"
       },
       "artifacts": {

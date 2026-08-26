@@ -43,6 +43,14 @@ export type PRCheckCountChip = {
   label: string
 }
 
+export function getActionRequiredCheckCountLabel(count: number): string {
+  return translate(
+    'auto.components.pr-check-counts.needsActionChip',
+    'Action required: {{value0}}',
+    { value0: count }
+  )
+}
+
 /**
  * The count chips above the check list on the PR page and the work-item dialog. One builder so the
  * two panes cannot word the same bucket differently — the neutral bucket read "skipped" here while
@@ -69,11 +77,7 @@ export function getCheckCountChips(counts: PRCheckCounts): PRCheckCountChip[] {
   if (counts.needsAction > 0) {
     chips.push({
       tone: 'action_required',
-      label: translate(
-        'auto.components.pr-check-counts.needsActionChip',
-        '{{value0}} action required',
-        { value0: counts.needsAction }
-      )
+      label: getActionRequiredCheckCountLabel(counts.needsAction)
     })
   }
   if (counts.pending > 0) {

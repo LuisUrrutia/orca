@@ -12431,6 +12431,7 @@
                 "f5cf324efa": "Comment display options",
                 "5e6e5a13fa": "View",
                 "actionRequiredHint": "This check needs a manual action on GitHub (for example, approving the workflow run) before merging is unblocked.",
+                "actionRequiredProviderHint": "Needs a manual action on {{value0}} to unblock merging.",
                 "b3195cba33": "Unmark author as bot",
                 "f588b46a6c": "Mark author as bot",
                 "e45324fbed": "Failed to load check details."
@@ -16623,7 +16624,7 @@
         "passingChip": "{{value0}} passing",
         "failingChip": "{{value0}} failing",
         "pendingChip": "{{value0}} pending",
-        "needsActionChip": "{{value0}} action required",
+        "needsActionChip": "Action required: {{value0}}",
         "unresolvedChip": "{{value0}} unresolved"
       },
       "BrowserPane": {
