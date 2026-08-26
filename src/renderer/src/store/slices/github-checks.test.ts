@@ -8,7 +8,7 @@ import type { AppState } from '../types'
 import type { PRCheckDetail } from '../../../../shared/github/check-types'
 
 describe('deriveCheckStatusFromChecks', () => {
-  it('treats an action_required check as failure so it is not a silent pass', () => {
+  it('retains action_required as a coarse merge-blocking failure status', () => {
     const checks: PRCheckDetail[] = [
       { name: 'build', status: 'completed', conclusion: 'success', url: null },
       { name: 'approval', status: 'completed', conclusion: 'action_required', url: null }

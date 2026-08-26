@@ -1,5 +1,6 @@
 import React from 'react'
 import {
+  AlertTriangle,
   ChevronDown,
   ChevronRight,
   CircleCheck,
@@ -38,6 +39,7 @@ export function ChecksList(props: ChecksListProps): React.JSX.Element {
     rows,
     passingCount,
     failingCount,
+    actionRequiredCount,
     pendingCount,
     neutralCount,
     toggleCheckExpanded,
@@ -73,6 +75,16 @@ export function ChecksList(props: ChecksListProps): React.JSX.Element {
               {translate(
                 'auto.components.right.sidebar.checks.panel.content.5e52f4ef7f',
                 'failing'
+              )}
+            </span>
+          )}
+          {actionRequiredCount > 0 && (
+            <span className="flex items-center gap-1">
+              <AlertTriangle className="size-3 text-amber-500" />
+              {translate(
+                'auto.components.pr-check-counts.needsActionChip',
+                '{{value0}} action required',
+                { value0: actionRequiredCount }
               )}
             </span>
           )}
