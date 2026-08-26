@@ -10,6 +10,14 @@ import {
   removeGitTempDir
 } from './git-handler-test-harness'
 
+type GitBufferTarget = {
+  gitBuffer(
+    args: string[],
+    cwd: string,
+    readState?: { useExplicitGitDir: boolean }
+  ): Promise<Buffer>
+}
+
 describe('GitHandler strict bare repositories', () => {
   let dispatcher: MockDispatcher
   let handler: GitHandler
@@ -84,6 +92,8 @@ describe('GitHandler strict bare repositories', () => {
   })
 
   it('reads commit diff blobs through an explicit gitdir retry', async () => {
+    const gitBufferSpy = vi.spyOn(handler as unknown as GitBufferTarget, 'gitBuffer')
+
     const result = await dispatcher.callRequest('git.commitDiff', {
       worktreePath: barePath,
       commitOid: headOid,
@@ -98,6 +108,10 @@ describe('GitHandler strict bare repositories', () => {
       originalIsBinary: false,
       modifiedIsBinary: false
     })
+    const firstReadState = gitBufferSpy.mock.calls[0]?.[2]
+    const secondReadState = gitBufferSpy.mock.calls[1]?.[2]
+    expect(firstReadState).toBe(secondReadState)
+    expect(firstReadState).toEqual({ useExplicitGitDir: true })
   })
 
   it('loads commit compare metadata through the relay entry point', async () => {

@@ -25,7 +25,10 @@ import { registerGitHandlers } from './git-handler-registration'
 import { resolveGitFetchHeadCommand, runWithGitFetchHeadLock } from '../shared/git-fetch-head-lock'
 import { endSubprocessStdin } from '../shared/subprocess-stdin-write'
 import { MAX_GIT_BUFFER, runGitToTermination } from './git-handler-command-termination'
-import { runWithExplicitBareRepositoryRetry } from '../shared/git-bare-repository-command'
+import {
+  runWithExplicitBareRepositoryRetry,
+  type ExplicitBareRepositoryReadState
+} from '../shared/git-bare-repository-command'
 
 const execFileAsync = promisify(execFile)
 
@@ -90,7 +93,7 @@ export class GitHandler {
       watcherRegistry: this.watcherRegistry,
       git: (args, cwd, opts) =>
         opts === undefined ? this.git(args, cwd) : this.git(args, cwd, opts),
-      gitBuffer: (args, cwd) => this.gitBuffer(args, cwd),
+      gitBuffer: (args, cwd, readState) => this.gitBuffer(args, cwd, readState),
       spawnClone: (args, cwd, progressId, context) =>
         this.spawnClone(args, cwd, progressId, context),
       clearGitMutationReadCaches: () => this.clearGitMutationReadCaches(),
@@ -193,16 +196,24 @@ export class GitHandler {
       : execute(args)
   }
 
-  private async gitBuffer(args: string[], cwd: string): Promise<Buffer> {
-    return runWithExplicitBareRepositoryRetry(args, async (commandArgs) => {
-      const { stdout } = (await execFileAsync('git', commandArgs, {
-        cwd,
-        env: buildRelayGitEnv(),
-        encoding: 'buffer',
-        maxBuffer: MAX_GIT_BUFFER
-      })) as { stdout: Buffer }
-      return stdout
-    })
+  private async gitBuffer(
+    args: string[],
+    cwd: string,
+    readState?: ExplicitBareRepositoryReadState
+  ): Promise<Buffer> {
+    return runWithExplicitBareRepositoryRetry(
+      args,
+      async (commandArgs) => {
+        const { stdout } = (await execFileAsync('git', commandArgs, {
+          cwd,
+          env: buildRelayGitEnv(),
+          encoding: 'buffer',
+          maxBuffer: MAX_GIT_BUFFER
+        })) as { stdout: Buffer }
+        return stdout
+      },
+      readState
+    )
   }
 
   private async spawnClone(

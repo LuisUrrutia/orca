@@ -1,5 +1,6 @@
 import { EventEmitter } from 'node:events'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { createExplicitBareRepositoryReadState } from '../../shared/git-bare-repository-command'
 
 const { execFileMock } = vi.hoisted(() => ({ execFileMock: vi.fn() }))
 
@@ -18,7 +19,9 @@ function strictBareRepositoryError(): Error & { stderr: string } {
 }
 
 function childProcess(): EventEmitter {
-  return Object.assign(new EventEmitter(), { kill: vi.fn() })
+  const child = Object.assign(new EventEmitter(), { kill: vi.fn() })
+  queueMicrotask(() => child.emit('close', 0, null))
+  return child
 }
 
 describe('git strict bare repository retry', () => {
@@ -63,8 +66,9 @@ describe('git strict bare repository retry', () => {
     ])
   })
 
-  it('retries opted-in binary reads when Git reports the failure as a buffer', async () => {
+  it('reuses explicit mode for later opted-in binary reads', async () => {
     const errorText = strictBareRepositoryError().stderr
+    const readState = createExplicitBareRepositoryReadState()
     execFileMock
       .mockImplementationOnce((_command, _args, _options, callback) => {
         callback(new Error('git failed'), Buffer.alloc(0), Buffer.from(errorText))
@@ -74,17 +78,30 @@ describe('git strict bare repository retry', () => {
         callback(null, Buffer.from('blob'), Buffer.alloc(0))
         return childProcess()
       })
+      .mockImplementationOnce((_command, _args, _options, callback) => {
+        callback(null, Buffer.from('next blob'), Buffer.alloc(0))
+        return childProcess()
+      })
 
     await expect(
       gitExecFileAsyncBuffer(['show', 'HEAD:file.txt'], {
         cwd: '/repo.git',
-        allowExplicitBareRepositoryRetry: true
+        allowExplicitBareRepositoryRetry: true,
+        explicitBareRepositoryReadState: readState
       })
     ).resolves.toEqual({ stdout: Buffer.from('blob') })
+    await expect(
+      gitExecFileAsyncBuffer(['show', 'HEAD:next.txt'], {
+        cwd: '/repo.git',
+        allowExplicitBareRepositoryRetry: true,
+        explicitBareRepositoryReadState: readState
+      })
+    ).resolves.toEqual({ stdout: Buffer.from('next blob') })
 
     expect(execFileMock.mock.calls.map(([, args]) => args)).toEqual([
       ['show', 'HEAD:file.txt'],
-      ['--git-dir=.', 'show', 'HEAD:file.txt']
+      ['--git-dir=.', 'show', 'HEAD:file.txt'],
+      ['--git-dir=.', 'show', 'HEAD:next.txt']
     ])
   })
 })
