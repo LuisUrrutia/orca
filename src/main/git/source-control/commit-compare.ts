@@ -1,7 +1,10 @@
 import type { GitCommitCompareResult } from '../../../shared/git-diff-compare-types'
 import { parseGitRevListFirstParentOid } from '../../../shared/git-rev-list-output'
 import type { GitRuntimeOptions } from '../git-runtime-options'
-import { gitOptionsForWorktree } from '../git-runtime-options'
+import {
+  createGitExplicitBareRepositoryReadOptions,
+  gitExplicitBareRepositoryReadOptionsForWorktree
+} from '../git-runtime-options'
 import { gitExecFileAsync } from '../runner'
 import { loadCommitChanges } from './branch-change-entries'
 import { resolveRefOid } from './compare-ref-oids'
@@ -11,9 +14,10 @@ export async function getCommitCompare(
   commitId: string,
   options: GitRuntimeOptions = {}
 ): Promise<GitCommitCompareResult> {
+  const readOptions = createGitExplicitBareRepositoryReadOptions(options)
   let commitOid = ''
   try {
-    commitOid = await resolveRefOid(worktreePath, `${commitId}^{commit}`, options)
+    commitOid = await resolveRefOid(worktreePath, `${commitId}^{commit}`, readOptions)
   } catch {
     return {
       summary: {
@@ -41,13 +45,13 @@ export async function getCommitCompare(
   try {
     const { stdout } = await gitExecFileAsync(
       ['rev-list', '--parents', '-n', '1', commitOid],
-      gitOptionsForWorktree(worktreePath, options)
+      gitExplicitBareRepositoryReadOptionsForWorktree(worktreePath, readOptions)
     )
     const firstParent = parseGitRevListFirstParentOid(stdout)
     summary.parentOid = firstParent
     summary.baseRef = firstParent ? firstParent.slice(0, 7) : 'empty tree'
 
-    const entries = await loadCommitChanges(worktreePath, summary.parentOid, commitOid, options)
+    const entries = await loadCommitChanges(worktreePath, summary.parentOid, commitOid, readOptions)
     summary.changedFiles = entries.length
     return { summary, entries }
   } catch (error) {

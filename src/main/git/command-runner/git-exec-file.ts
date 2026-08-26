@@ -5,7 +5,10 @@ import {
   resolveGitFetchHeadCommand,
   runWithGitFetchHeadLock
 } from '../../../shared/git-fetch-head-lock'
-import { runWithExplicitBareRepositoryRetry } from '../../../shared/git-bare-repository-command'
+import {
+  explicitBareRepositoryRetryArgs,
+  runWithExplicitBareRepositoryRetry
+} from '../../../shared/git-bare-repository-command'
 import {
   isWslLinkedWorktreeGitRoutingCandidate,
   prepareWslLinkedWorktreeGitRouting
@@ -121,6 +124,12 @@ async function gitExecFileAsyncUnlocked(
             !isQuietGitControlFlowExit(error) &&
             !options.signal?.aborted
           ) {
+            if (
+              options.allowExplicitBareRepositoryRetry &&
+              explicitBareRepositoryRetryArgs(args, error)
+            ) {
+              throw error
+            }
             await terminationState.current
             const wasMissing = invalidateMissingDirectWslGit(error, resolved)
             const fallback = resolveGitCommand(
@@ -175,7 +184,7 @@ export function gitExecFileAsync(
       : run()
   }
   return options.allowExplicitBareRepositoryRetry
-    ? runWithExplicitBareRepositoryRetry(args, execute)
+    ? runWithExplicitBareRepositoryRetry(args, execute, options.explicitBareRepositoryReadState)
     : execute(args)
 }
 
@@ -196,6 +205,7 @@ export async function gitExecFileAsyncBuffer(
     | 'preferWslDirectGit'
     | 'admissionTier'
     | 'allowExplicitBareRepositoryRetry'
+    | 'explicitBareRepositoryReadState'
   >
 ): Promise<{ stdout: Buffer }> {
   const execute = async (commandArgs: string[]): Promise<{ stdout: Buffer }> => {
@@ -223,11 +233,7 @@ export async function gitExecFileAsyncBuffer(
         tier: options.admissionTier
       })
       span?.setAttribute('git.queue_wait_ms', grant.queueWaitMs)
-      const timeoutMs = gitCommandTimeoutMs(
-        commandArgs,
-        options.timeout,
-        options.timeoutMsForTest
-      )
+      const timeoutMs = gitCommandTimeoutMs(commandArgs, options.timeout, options.timeoutMsForTest)
       let termination: Promise<void> | null = null
       try {
         let reportTerminated: () => void = () => {}
@@ -257,7 +263,7 @@ export async function gitExecFileAsyncBuffer(
     })
   }
   return options.allowExplicitBareRepositoryRetry
-    ? runWithExplicitBareRepositoryRetry(args, execute)
+    ? runWithExplicitBareRepositoryRetry(args, execute, options.explicitBareRepositoryReadState)
     : execute(args)
 }
 

@@ -3,6 +3,7 @@ import type { InFlightPromiseDedupe } from '../shared/in-flight-promise-dedupe'
 import type { GitCapabilityCache } from '../shared/git-capability-cache'
 import type { SubmodulePathsCache } from './git-handler-submodule-ops'
 import type { RelayFilesystemWatchRegistry } from './relay-filesystem-watch-registry'
+import type { ExplicitBareRepositoryReadState } from '../shared/git-bare-repository-command'
 
 export const GIT_BULK_CHUNK_SIZE = 100
 
@@ -15,6 +16,7 @@ export type GitHandlerCommandOptions = {
   timeout?: number
   terminationBarrier?: boolean
   allowExplicitBareRepositoryRetry?: boolean
+  explicitBareRepositoryReadState?: ExplicitBareRepositoryReadState
 }
 
 export type GitHandlerCommandResult = { stdout: string; stderr: string }

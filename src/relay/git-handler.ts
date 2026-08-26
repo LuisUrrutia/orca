@@ -189,7 +189,7 @@ export class GitHandler {
         : run(commandArgs)
     }
     return opts?.allowExplicitBareRepositoryRetry
-      ? runWithExplicitBareRepositoryRetry(args, execute)
+      ? runWithExplicitBareRepositoryRetry(args, execute, opts.explicitBareRepositoryReadState)
       : execute(args)
   }
 

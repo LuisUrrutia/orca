@@ -5,6 +5,10 @@ import type {
 import { readBranchCompareHead } from '../../../shared/git-branch-compare-head'
 import { resolveWorktreeAddBaseRef } from '../../../shared/worktree/base-ref'
 import type { GitRuntimeOptions } from '../git-runtime-options'
+import {
+  createGitExplicitBareRepositoryReadOptions,
+  gitExplicitBareRepositoryReadOptionsForWorktree
+} from '../git-runtime-options'
 import { resolveWorktreeBaseCommitOid } from '../worktree-base-ref-probe'
 import { loadBranchChanges } from './branch-change-entries'
 import {
@@ -19,6 +23,7 @@ export async function getBranchCompare(
   baseRef: string,
   options: GitRuntimeOptions = {}
 ): Promise<GitBranchCompareResult> {
+  const readOptions = createGitExplicitBareRepositoryReadOptions(options)
   const summary: GitBranchCompareSummary = {
     baseRef,
     baseOid: null,
@@ -33,21 +38,25 @@ export async function getBranchCompare(
   // commits; remote-tracking refs may store annotated tags whose raw oid must be preserved.
   const reusableProbedOidByRef = new Map<string, string>()
   const { compareRef, headOidResult, baseOidResult } = await readBranchCompareHead({
-    readCompareRef: () => resolveCompareRef(worktreePath, options),
+    readCompareRef: () => resolveCompareRef(worktreePath, readOptions),
     resolveBaseRef: () =>
       // Why: short refs like "origin/main" can collide with a local branch; use the proven remote-tracking ref.
       resolveWorktreeAddBaseRef(baseRef, async (qualifiedRef) => {
-        const oid = await resolveWorktreeBaseCommitOid(worktreePath, qualifiedRef, options)
+        const oid = await resolveWorktreeBaseCommitOid(
+          worktreePath,
+          qualifiedRef,
+          gitExplicitBareRepositoryReadOptionsForWorktree(worktreePath, readOptions)
+        )
         if (oid !== null && qualifiedRef.startsWith('refs/heads/')) {
           reusableProbedOidByRef.set(qualifiedRef, oid)
         }
         return oid !== null
       }),
-    readHeadOid: () => resolveRefOid(worktreePath, 'HEAD', options),
+    readHeadOid: () => resolveRefOid(worktreePath, 'HEAD', readOptions),
     readBaseOid: (ref) => {
       const reusableOid = reusableProbedOidByRef.get(ref)
       return reusableOid === undefined
-        ? resolveRefOid(worktreePath, ref, options)
+        ? resolveRefOid(worktreePath, ref, readOptions)
         : Promise.resolve(reusableOid)
     }
   })
@@ -86,7 +95,7 @@ export async function getBranchCompare(
 
   let mergeBase = ''
   try {
-    mergeBase = await resolveMergeBase(worktreePath, baseOid, headOid, options)
+    mergeBase = await resolveMergeBase(worktreePath, baseOid, headOid, readOptions)
     summary.mergeBase = mergeBase
   } catch {
     summary.status = 'no-merge-base'
@@ -96,8 +105,8 @@ export async function getBranchCompare(
 
   try {
     const [entries, divergence] = await Promise.all([
-      loadBranchChanges(worktreePath, mergeBase, headOid, options),
-      countCompareDivergence(worktreePath, baseOid, headOid, options)
+      loadBranchChanges(worktreePath, mergeBase, headOid, readOptions),
+      countCompareDivergence(worktreePath, baseOid, headOid, readOptions)
     ])
     summary.changedFiles = entries.length
     summary.commitsAhead = divergence.ahead

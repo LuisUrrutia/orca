@@ -9,6 +9,8 @@ import { assertGitPushTargetShape } from '../shared/git-push-target-validation'
 import { getPublishTargetStatus, type GitCommandRunner } from '../shared/git-publish-target-status'
 import type { GitPushTarget } from '../shared/worktree/types'
 import { getEffectiveGitUpstreamStatus } from '../shared/git-effective-upstream'
+import { createExplicitBareRepositoryReadState } from '../shared/git-bare-repository-command'
+import type { GitExec } from './git-handler-ops'
 
 export class GitHandlerComparisonOperations extends GitHandlerOperationContext {
   async branchCompare(params: Record<string, unknown>) {
@@ -18,7 +20,13 @@ export class GitHandlerComparisonOperations extends GitHandlerOperationContext {
     if (baseRef.startsWith('-')) {
       throw new Error('Base ref must not start with "-"')
     }
-    const gitBound = this.git.bind(this)
+    const explicitBareRepositoryReadState = createExplicitBareRepositoryReadState()
+    const gitBound: GitExec = (args, cwd, options) =>
+      this.git(args, cwd, {
+        ...options,
+        allowExplicitBareRepositoryRetry: true,
+        explicitBareRepositoryReadState
+      })
     return branchCompareOp(gitBound, worktreePath, baseRef, async (mergeBase, headOid) => {
       // Why: preserve non-ASCII filenames as UTF-8 for parseBranchDiff.
       const [{ stdout }, { stdout: numstat }] = await Promise.all([
@@ -38,7 +46,14 @@ export class GitHandlerComparisonOperations extends GitHandlerOperationContext {
   async commitCompare(params: Record<string, unknown>) {
     const worktreePath = params.worktreePath as string
     const commitId = params.commitId as string
-    return commitCompareOp(this.git.bind(this), worktreePath, commitId)
+    const explicitBareRepositoryReadState = createExplicitBareRepositoryReadState()
+    const gitBound: GitExec = (args, cwd, options) =>
+      this.git(args, cwd, {
+        ...options,
+        allowExplicitBareRepositoryRetry: true,
+        explicitBareRepositoryReadState
+      })
+    return commitCompareOp(gitBound, worktreePath, commitId)
   }
 
   async upstreamStatus(params: Record<string, unknown>) {

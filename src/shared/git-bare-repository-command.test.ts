@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { explicitBareRepositoryRetryArgs } from './git-bare-repository-command'
+import {
+  createExplicitBareRepositoryReadState,
+  explicitBareRepositoryRetryArgs,
+  runWithExplicitBareRepositoryRetry
+} from './git-bare-repository-command'
 
 describe('explicitBareRepositoryRetryArgs', () => {
   it('retries strict implicit bare-repository failures through the current gitdir', () => {
@@ -56,5 +60,33 @@ describe('explicitBareRepositoryRetryArgs', () => {
     const retryArgs = explicitBareRepositoryRetryArgs(args, error)
 
     expect(retryArgs).toEqual(['--git-dir=.', ...args])
+  })
+
+  it('keeps later pathspec reads explicit after a confirmed retry', async () => {
+    const state = createExplicitBareRepositoryReadState()
+    const calls: string[][] = []
+    const run = async (args: string[]): Promise<string> => {
+      calls.push(args)
+      if (calls.length === 1) {
+        throw Object.assign(new Error('git failed'), {
+          stderr:
+            "fatal: cannot use bare repository '/repo.git' (safe.bareRepository is 'explicit')"
+        })
+      }
+      return 'ok'
+    }
+
+    await expect(
+      runWithExplicitBareRepositoryRetry(['rev-parse', 'HEAD'], run, state)
+    ).resolves.toBe('ok')
+    await expect(
+      runWithExplicitBareRepositoryRetry(['diff', 'base', 'head'], run, state)
+    ).resolves.toBe('ok')
+
+    expect(calls).toEqual([
+      ['rev-parse', 'HEAD'],
+      ['--git-dir=.', 'rev-parse', 'HEAD'],
+      ['--git-dir=.', 'diff', 'base', 'head']
+    ])
   })
 })
