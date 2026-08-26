@@ -59,8 +59,10 @@ export function filterProjectGroupsForRepo(
   projectGroups: readonly ProjectGroup[],
   repo: Pick<Repo, 'connectionId' | 'executionHostId'>
 ): ProjectGroup[] {
-  const repoHostId = getRepoExecutionHostId(repo)
-  return projectGroups.filter((group) => catalogOwnsHost(getProjectGroupHostId(group), repoHostId))
+  const catalogHostId = getProjectGroupCatalogHostIdForRepo(repo)
+  return projectGroups.filter((group) =>
+    catalogOwnsHost(catalogHostId, getProjectGroupHostId(group))
+  )
 }
 
 export function projectGroupMatchesOwnerHost(
