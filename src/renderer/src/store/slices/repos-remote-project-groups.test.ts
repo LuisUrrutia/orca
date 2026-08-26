@@ -97,6 +97,170 @@ describe('paired runtime project group routing', () => {
     )
   })
 
+  it('keeps a confirmed runtime group when an older catalog fetch finishes later', async () => {
+    let resolveStaleList!: (value: unknown) => void
+    runtimeEnvironmentCall.mockImplementation(({ method }) => {
+      if (method === 'projectGroup.list') {
+        return new Promise((resolve) => {
+          resolveStaleList = resolve
+        })
+      }
+      if (method === 'projectGroup.create') {
+        return Promise.resolve({
+          id: 'rpc-create',
+          ok: true,
+          result: { group: projectGroup },
+          _meta: { runtimeId: 'runtime-remote' }
+        })
+      }
+      throw new Error(`Unexpected method: ${method}`)
+    })
+    const store = createTestStore()
+
+    const staleFetch = store.getState().fetchProjectGroups({ runtimeEnvironmentId: 'env-1' })
+    await vi.waitFor(() => expect(resolveStaleList).toBeTypeOf('function'))
+
+    await expect(
+      store.getState().createProjectGroup('Flute', { hostId: 'runtime:env-1' })
+    ).resolves.toEqual({ ...projectGroup, executionHostId: 'runtime:env-1' })
+
+    resolveStaleList({
+      id: 'rpc-stale-list',
+      ok: true,
+      result: { groups: [] },
+      _meta: { runtimeId: 'runtime-remote' }
+    })
+    await staleFetch
+
+    expect(store.getState().projectGroups).toEqual([
+      { ...projectGroup, executionHostId: 'runtime:env-1' }
+    ])
+  })
+
+  it('does not duplicate a created group already published by a catalog refresh', async () => {
+    let resolveCreate!: (value: unknown) => void
+    runtimeEnvironmentCall.mockImplementation(({ method }) => {
+      if (method === 'projectGroup.create') {
+        return new Promise((resolve) => {
+          resolveCreate = resolve
+        })
+      }
+      if (method === 'projectGroup.list') {
+        return Promise.resolve({
+          id: 'rpc-list',
+          ok: true,
+          result: { groups: [projectGroup] },
+          _meta: { runtimeId: 'runtime-remote' }
+        })
+      }
+      throw new Error(`Unexpected method: ${method}`)
+    })
+    const store = createTestStore()
+
+    const pendingCreate = store.getState().createProjectGroup('Flute', { hostId: 'runtime:env-1' })
+    await vi.waitFor(() => expect(resolveCreate).toBeTypeOf('function'))
+
+    await store.getState().fetchProjectGroups({ runtimeEnvironmentId: 'env-1' })
+    resolveCreate({
+      id: 'rpc-create',
+      ok: true,
+      result: { group: projectGroup },
+      _meta: { runtimeId: 'runtime-remote' }
+    })
+    await pendingCreate
+
+    expect(store.getState().projectGroups).toEqual([
+      { ...projectGroup, executionHostId: 'runtime:env-1' }
+    ])
+  })
+
+  it('restores a confirmed rename after an older catalog fetch removed the row', async () => {
+    let resolveStaleList!: (value: unknown) => void
+    let resolveUpdate!: (value: unknown) => void
+    runtimeEnvironmentCall.mockImplementation(({ method }) => {
+      if (method === 'projectGroup.list') {
+        return new Promise((resolve) => {
+          resolveStaleList = resolve
+        })
+      }
+      if (method === 'projectGroup.update') {
+        return new Promise((resolve) => {
+          resolveUpdate = resolve
+        })
+      }
+      throw new Error(`Unexpected method: ${method}`)
+    })
+    const runtimeGroup = { ...projectGroup, executionHostId: 'runtime:env-1' as const }
+    const store = createTestStore()
+    store.setState({ projectGroups: [runtimeGroup] })
+
+    const staleFetch = store.getState().fetchProjectGroups({ runtimeEnvironmentId: 'env-1' })
+    await vi.waitFor(() => expect(resolveStaleList).toBeTypeOf('function'))
+    const pendingUpdate = store
+      .getState()
+      .updateProjectGroup(projectGroup.id, { name: 'Brass' }, { hostId: 'runtime:env-1' })
+    await vi.waitFor(() => expect(resolveUpdate).toBeTypeOf('function'))
+
+    resolveStaleList({
+      id: 'rpc-stale-list',
+      ok: true,
+      result: { groups: [] },
+      _meta: { runtimeId: 'runtime-remote' }
+    })
+    await staleFetch
+    resolveUpdate({
+      id: 'rpc-update',
+      ok: true,
+      result: { group: { ...projectGroup, name: 'Brass' } },
+      _meta: { runtimeId: 'runtime-remote' }
+    })
+    await pendingUpdate
+
+    expect(store.getState().projectGroups).toEqual([
+      { ...projectGroup, name: 'Brass', executionHostId: 'runtime:env-1' }
+    ])
+  })
+
+  it('does not resurrect a deleted runtime group from an older catalog fetch', async () => {
+    let resolveStaleList!: (value: unknown) => void
+    runtimeEnvironmentCall.mockImplementation(({ method }) => {
+      if (method === 'projectGroup.list') {
+        return new Promise((resolve) => {
+          resolveStaleList = resolve
+        })
+      }
+      if (method === 'projectGroup.delete') {
+        return Promise.resolve({
+          id: 'rpc-delete',
+          ok: true,
+          result: { deleted: true },
+          _meta: { runtimeId: 'runtime-remote' }
+        })
+      }
+      throw new Error(`Unexpected method: ${method}`)
+    })
+    const runtimeGroup = { ...projectGroup, executionHostId: 'runtime:env-1' as const }
+    const store = createTestStore()
+    store.setState({ projectGroups: [runtimeGroup] })
+
+    const staleFetch = store.getState().fetchProjectGroups({ runtimeEnvironmentId: 'env-1' })
+    await vi.waitFor(() => expect(resolveStaleList).toBeTypeOf('function'))
+
+    await expect(
+      store.getState().deleteProjectGroup(projectGroup.id, { hostId: 'runtime:env-1' })
+    ).resolves.toBe(true)
+
+    resolveStaleList({
+      id: 'rpc-stale-list',
+      ok: true,
+      result: { groups: [projectGroup] },
+      _meta: { runtimeId: 'runtime-remote' }
+    })
+    await staleFetch
+
+    expect(store.getState().projectGroups).toEqual([])
+  })
+
   it('rejects a client-owned group for a paired runtime repo', async () => {
     runtimeEnvironmentCall.mockResolvedValue({
       id: 'rpc-invalid-move',

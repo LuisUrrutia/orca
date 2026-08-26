@@ -81,18 +81,31 @@ export function resolveProjectGroupOwnerHostId(
   groupId: string,
   hostId?: ExecutionHostId
 ): ExecutionHostId | null {
-  const owner = findIndexedProjectGroupOwner(state.projectGroups, groupId, hostId)
+  const catalogHostId = hostId ? getProjectGroupCatalogHostId(hostId) : null
+  const catalogMatches = catalogHostId
+    ? state.projectGroups.filter(
+        (group) =>
+          group.id === groupId && catalogOwnsHost(catalogHostId, getProjectGroupHostId(group))
+      )
+    : null
+  // Why: callers can pass the logical local catalog after resolving an SSH row;
+  // exact physical-host lookup would lose that owner on the next mutation step.
+  const owner = catalogMatches
+    ? catalogMatches.length === 1
+      ? catalogMatches[0]
+      : null
+    : findIndexedProjectGroupOwner(state.projectGroups, groupId)
   if (!owner) {
     return null
   }
-  if (hostId) {
-    return hostId
+  if (catalogHostId) {
+    return catalogHostId
   }
   // Why: an unstamped row carries no owner, so keep the focused-host behavior instead of assuming local.
   if (!owner.executionHostId && !owner.connectionId) {
     return null
   }
-  return getProjectGroupHostId(owner)
+  return getProjectGroupCatalogHostId(getProjectGroupHostId(owner))
 }
 
 // Why: the sidebar lists groups from every host, so mutations must route to the row's owner
