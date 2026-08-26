@@ -278,6 +278,7 @@ describe('WorktreeCardStatusSlot', () => {
     expect(markup).toContain('viewBox="0 0 16 16"')
     expect(markup).toContain('size-[13px] translate-x-px')
     expect(markup).toContain('text-amber-500/85')
+    expect(markup).not.toContain('lucide-loader-circle')
     expect(markup).not.toContain('lucide-git-merge')
   })
 

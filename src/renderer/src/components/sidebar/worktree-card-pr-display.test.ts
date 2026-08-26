@@ -48,7 +48,8 @@ describe('getWorktreeCardPrDisplay', () => {
     expect(getWorktreeCardPrDisplay(undefined, 456)).toEqual({
       provider: 'github',
       number: 456,
-      title: 'Loading PR...'
+      title: 'Loading PR...',
+      isLoading: true
     })
   })
 
@@ -150,7 +151,8 @@ describe('getWorktreeCardPrDisplay', () => {
     expect(getWorktreeCardPrDisplay(pr, 456)).toEqual({
       provider: 'github',
       number: 456,
-      title: 'Loading PR...'
+      title: 'Loading PR...',
+      isLoading: true
     })
   })
 
@@ -162,7 +164,8 @@ describe('getWorktreeCardPrDisplay', () => {
     expect(getWorktreeCardPrDisplay(gitLabReview, null, 654)).toEqual({
       provider: 'gitlab',
       number: 654,
-      title: 'Loading MR...'
+      title: 'Loading MR...',
+      isLoading: true
     })
   })
 
