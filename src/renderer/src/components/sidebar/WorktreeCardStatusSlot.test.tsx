@@ -1,6 +1,8 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import type { ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { i18n } from '@/i18n/i18n'
+import { checksLabel } from './WorktreeCardHelpers'
 import { WorktreeCardStatusSlot } from './WorktreeCardStatusSlot'
 import type { WorktreeCardPrDisplay } from './worktree-card-pr-display'
 
@@ -257,6 +259,33 @@ describe('WorktreeCardStatusSlot', () => {
     expect(markup).toContain('PR checks: Passing')
     expect(markup).toContain('size-[13px] translate-x-px text-emerald-500/80')
     expect(markup).not.toContain('text-muted-foreground')
+  })
+
+  it('localizes action-required status copy', async () => {
+    await i18n.changeLanguage('es')
+    try {
+      const markup = renderToStaticMarkup(
+        <WorktreeCardStatusSlot
+          worktreeId="wt-1"
+          showStatus
+          showUnreadAction={false}
+          isUnread={false}
+          unreadTooltip="Marcar como no leído"
+          onPointerDown={vi.fn()}
+          onToggleUnread={vi.fn()}
+          prDisplay={{
+            ...review,
+            checksPresentationStatus: 'action_required'
+          }}
+          newCardStyle
+        />
+      )
+
+      expect(checksLabel('action_required')).toBe('Acción requerida')
+      expect(markup).toContain('Checks de PR: acción requerida')
+    } finally {
+      await i18n.changeLanguage('en')
+    }
   })
 
   it('uses the unified compact review glyph for GitLab MR status', () => {

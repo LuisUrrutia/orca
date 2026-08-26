@@ -80,7 +80,11 @@ function getReviewStatusLabel(review: WorktreeCardPrDisplay): string {
     return `${label} checks: Failed`
   }
   if (status === 'action_required') {
-    return `${label} checks: Action required`
+    return translate(
+      'auto.components.sidebar.WorktreeCardStatusSlot.actionRequiredChecks',
+      '{{reviewLabel}} checks: Action required',
+      { reviewLabel: label }
+    )
   }
   if (status === 'pending') {
     return `${label} checks: Pending`
