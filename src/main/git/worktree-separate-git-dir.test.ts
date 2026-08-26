@@ -178,7 +178,7 @@ describe('git worktree separate git dir paths', () => {
     }
   )
 
-  it.skipIf(process.platform === 'win32')('does not throw for a bare repo', async () => {
+  it('does not throw for a bare repo', async () => {
     const repoPath = await createBareRepo()
     vi.stubEnv('GIT_CONFIG_COUNT', '1')
     vi.stubEnv('GIT_CONFIG_KEY_0', 'safe.bareRepository')
