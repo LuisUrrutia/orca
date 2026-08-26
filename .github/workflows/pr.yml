@@ -820,6 +820,14 @@ jobs:
           src/main/startup/windows-install-dir-acl-repair.win32.test.ts
           src/main/runtime/repo-worktree-admin-fingerprint.test.ts
           src/main/runtime/worktree-scan-admin-fingerprint-gate.test.ts
+          src/shared/git-bare-repository-command.test.ts
+          src/shared/git-fetch-head-lock.test.ts
+          src/main/git/runner-strict-bare-repository.test.ts
+          src/main/git/runner-wsl-login-shell-capture.test.ts
+          src/main/git/git-blob-read-strict-bare-repository.test.ts
+          src/main/git/worktree-separate-git-dir.test.ts
+          src/relay/git-handler-strict-bare-repository.test.ts
+          src/relay/git-handler-worktree-inspection.test.ts
           src/shared/secure-file-fsync-flags.test.ts
           src/main/ipc/pty-codex-account-attribution.test.ts
           src/main/ipc/pty-spawn-env-codex-resume-provenance.test.ts

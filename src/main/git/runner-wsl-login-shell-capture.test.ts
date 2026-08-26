@@ -91,6 +91,43 @@ describe('WSL login-shell reads are fenced', () => {
     expect(Buffer.compare(stdout, binary)).toBe(0)
   })
 
+  it('retries strict bare blob reads inside the selected WSL distro', async () => {
+    const errorText =
+      "fatal: cannot use bare repository '/repo.git' (safe.bareRepository is 'explicit')"
+    execFileMock.mockImplementation((_command, args, _options, callback) => {
+      const script = String(args.at(-1))
+      if (!script.includes("'show'")) {
+        queueMicrotask(() => callback?.(null, Buffer.alloc(0), Buffer.alloc(0)))
+        return createMockChild()
+      }
+      if (!script.includes('--git-dir=.')) {
+        queueMicrotask(() =>
+          callback?.(new Error('git failed'), Buffer.alloc(0), Buffer.from(errorText))
+        )
+        return createMockChild()
+      }
+      const nonce = /__ORCA_WSL_CAPTURE_BEGIN_([^_]+)__/.exec(script)?.[1] ?? ''
+      const stdout = Buffer.from(
+        `${BANNER}__ORCA_WSL_CAPTURE_BEGIN_${nonce}__blob__ORCA_WSL_CAPTURE_END_${nonce}__`
+      )
+      queueMicrotask(() => callback?.(null, stdout, Buffer.alloc(0)))
+      return createMockChild()
+    })
+
+    const { stdout } = await gitExecFileAsyncBuffer(['show', 'HEAD:file.txt'], {
+      cwd: WSL_CWD,
+      wslDistro: DISTRO,
+      allowExplicitBareRepositoryRetry: true
+    })
+
+    expect(stdout.toString('utf8')).toBe('blob')
+    const gitReadScripts = execFileMock.mock.calls
+      .map((call) => String(call[1]?.at(-1)))
+      .filter((script) => script.includes("'show'"))
+    expect(gitReadScripts).toHaveLength(2)
+    expect(gitReadScripts[1]).toContain('--git-dir=.')
+  })
+
   /** Answer the core.sshCommand probe with `configured`, and any other command with ok. */
   function respondToSshPolicyProbe(configured: string): void {
     execFileMock.mockImplementation((_command, args, _options, callback) => {
