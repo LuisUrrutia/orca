@@ -26,8 +26,12 @@ export async function hydrateUnstablePRCheckRollup(
     )
 ): Promise<PullRequestLookupData> {
   const rollupStatus = deriveCheckStatuses(data.statusCheckRollup).presentationStatus
+  const mergeStateStatus = data.mergeStateStatus?.toUpperCase()
+  // GitHub can report UNKNOWN with a passing rollup that omits suite-only blockers.
+  const rollupMayOmitSuiteOnlyChecks =
+    mergeStateStatus === 'UNSTABLE' || mergeStateStatus === 'UNKNOWN'
   if (
-    data.mergeStateStatus?.toUpperCase() !== 'UNSTABLE' ||
+    !rollupMayOmitSuiteOnlyChecks ||
     mapPRState(data.state, data.isDraft) !== 'open' ||
     rollupStatus === 'failure' ||
     rollupStatus === 'action_required'
@@ -40,8 +44,8 @@ export async function hydrateUnstablePRCheckRollup(
     const checks = await loadChecks()
     return checks.length > 0 ? { ...data, statusCheckRollup: checks } : neutralFallback
   } catch (error) {
-    // An unstable passing rollup is incomplete; keep it visible without claiming success.
-    console.warn('Unable to hydrate unstable PR checks:', error)
+    // An incomplete passing rollup must stay visible without claiming success.
+    console.warn('Unable to hydrate incomplete PR checks:', error)
     return neutralFallback
   }
 }

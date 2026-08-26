@@ -108,10 +108,14 @@ describe('hydrateUnstablePRCheckRollup', () => {
     ])
   })
 
-  it('loads a suite-only blocker while another visible check is pending', async () => {
-    const pendingCheck = { name: 'build', status: 'IN_PROGRESS', conclusion: null }
+  it('replaces a partial passing rollup when GitHub reports an unknown merge state', async () => {
     const loadChecks = vi.fn().mockResolvedValue([
-      pendingCheck,
+      {
+        name: 'track-community-pr',
+        status: 'completed',
+        conclusion: 'success',
+        url: null
+      },
       {
         name: 'GitHub Actions',
         status: 'completed',
@@ -121,23 +125,66 @@ describe('hydrateUnstablePRCheckRollup', () => {
     ])
 
     const result = await hydrateUnstablePRCheckRollup(
-      createPullRequest({ statusCheckRollup: [pendingCheck] }),
+      createPullRequest({
+        mergeStateStatus: 'UNKNOWN',
+        statusCheckRollup: [
+          { name: 'track-community-pr', status: 'COMPLETED', conclusion: 'SUCCESS' }
+        ]
+      }),
       lookupArgs,
       loadChecks
     )
 
     expect(loadChecks).toHaveBeenCalledOnce()
     expect(result.statusCheckRollup).toEqual([
-      pendingCheck,
+      expect.objectContaining({ conclusion: 'success' }),
       expect.objectContaining({ conclusion: 'action_required' })
     ])
   })
 
+  it.each(['UNSTABLE', 'UNKNOWN'])(
+    'loads a suite-only blocker while another visible check is pending for %s',
+    async (mergeStateStatus) => {
+      const pendingCheck = { name: 'build', status: 'IN_PROGRESS', conclusion: null }
+      const loadChecks = vi.fn().mockResolvedValue([
+        pendingCheck,
+        {
+          name: 'GitHub Actions',
+          status: 'completed',
+          conclusion: 'action_required',
+          url: null
+        }
+      ])
+
+      const result = await hydrateUnstablePRCheckRollup(
+        createPullRequest({ mergeStateStatus, statusCheckRollup: [pendingCheck] }),
+        lookupArgs,
+        loadChecks
+      )
+
+      expect(loadChecks).toHaveBeenCalledOnce()
+      expect(result.statusCheckRollup).toEqual([
+        pendingCheck,
+        expect.objectContaining({ conclusion: 'action_required' })
+      ])
+    }
+  )
+
   it.each([
     ['a failing rollup', { statusCheckRollup: [{ conclusion: 'failure' }] }],
     ['an action-required rollup', { statusCheckRollup: [{ conclusion: 'action_required' }] }],
+    [
+      'an unknown merge state with a failing rollup',
+      { mergeStateStatus: 'UNKNOWN', statusCheckRollup: [{ conclusion: 'failure' }] }
+    ],
+    [
+      'an unknown merge state with an action-required rollup',
+      { mergeStateStatus: 'UNKNOWN', statusCheckRollup: [{ conclusion: 'action_required' }] }
+    ],
     ['a stable merge state', { mergeStateStatus: 'CLEAN' }],
-    ['a closed PR', { state: 'CLOSED' }]
+    ['a draft PR', { isDraft: true }],
+    ['a closed PR', { state: 'CLOSED' }],
+    ['a merged PR', { state: 'MERGED', mergeStateStatus: 'UNKNOWN' }]
   ])('does not load detailed checks for %s', async (_label, overrides) => {
     const loadChecks = vi.fn()
 
@@ -175,7 +222,7 @@ describe('hydrateUnstablePRCheckRollup', () => {
     const result = await hydrateUnstablePRCheckRollup(data, lookupArgs, loadChecks)
 
     expect(result.statusCheckRollup).toEqual([])
-    expect(warn).toHaveBeenCalledWith('Unable to hydrate unstable PR checks:', error)
+    expect(warn).toHaveBeenCalledWith('Unable to hydrate incomplete PR checks:', error)
     warn.mockRestore()
   })
 
@@ -190,7 +237,7 @@ describe('hydrateUnstablePRCheckRollup', () => {
     const result = await hydrateUnstablePRCheckRollup(data, lookupArgs, loadChecks)
 
     expect(result).toBe(data)
-    expect(warn).toHaveBeenCalledWith('Unable to hydrate unstable PR checks:', error)
+    expect(warn).toHaveBeenCalledWith('Unable to hydrate incomplete PR checks:', error)
     warn.mockRestore()
   })
 })
