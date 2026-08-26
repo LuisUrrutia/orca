@@ -2,8 +2,8 @@ import type { GitBranchChangeEntry } from '../../../shared/git-diff-compare-type
 import type { GitBranchChangeStatus } from '../../../shared/git-status-types'
 import { parseNumstat } from '../../../shared/git-uncommitted-line-stats'
 import { decodeGitCQuotedPath } from '../../../shared/git-cquoted-path'
-import type { GitExplicitBareRepositoryReadOptions } from '../git-runtime-options'
-import { gitExplicitBareRepositoryReadOptionsForWorktree } from '../git-runtime-options'
+import type { GitCompareOptions } from '../git-runtime-options'
+import { gitOptionsForWorktree } from '../git-runtime-options'
 import { gitExecFileAsync } from '../runner'
 import { MAX_GIT_SHOW_BYTES } from './git-show-max-bytes'
 
@@ -28,11 +28,11 @@ export async function loadBranchChanges(
   worktreePath: string,
   mergeBase: string,
   headOid: string,
-  options: GitExplicitBareRepositoryReadOptions
+  options: GitCompareOptions
 ): Promise<GitBranchChangeEntry[]> {
   // Why: core.quotePath=false keeps real UTF-8 paths — see getStatus rationale.
   const gitOptions = {
-    ...gitExplicitBareRepositoryReadOptionsForWorktree(worktreePath, options),
+    ...gitOptionsForWorktree(worktreePath, options),
     maxBuffer: MAX_GIT_SHOW_BYTES
   }
   // Why: both diffs are independent, so run them concurrently instead of serializing.
@@ -66,7 +66,7 @@ export async function loadCommitChanges(
   worktreePath: string,
   parentOid: string | null,
   commitOid: string,
-  options: GitExplicitBareRepositoryReadOptions
+  options: GitCompareOptions
 ): Promise<GitBranchChangeEntry[]> {
   // Why: root commits have no parent tree; diff-tree --root uses git's empty tree, avoiding a hardcoded hash-format-specific oid.
   const args = parentOid
@@ -99,7 +99,7 @@ export async function loadCommitChanges(
         commitOid
       ]
   const gitOptions = {
-    ...gitExplicitBareRepositoryReadOptionsForWorktree(worktreePath, options),
+    ...gitOptionsForWorktree(worktreePath, options),
     maxBuffer: MAX_GIT_SHOW_BYTES
   }
   // Why: the two git queries are independent, so run them in parallel.

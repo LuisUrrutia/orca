@@ -13,6 +13,16 @@ import { createExplicitBareRepositoryReadState } from '../shared/git-bare-reposi
 import type { GitExec } from './git-handler-ops'
 
 export class GitHandlerComparisonOperations extends GitHandlerOperationContext {
+  private createCompareGit(): GitExec {
+    const readState = createExplicitBareRepositoryReadState()
+    return (args, cwd, options) =>
+      this.git(args, cwd, {
+        ...options,
+        allowExplicitBareRepositoryRetry: true,
+        explicitBareRepositoryReadState: readState
+      })
+  }
+
   async branchCompare(params: Record<string, unknown>) {
     const worktreePath = params.worktreePath as string
     const baseRef = params.baseRef as string
@@ -20,21 +30,15 @@ export class GitHandlerComparisonOperations extends GitHandlerOperationContext {
     if (baseRef.startsWith('-')) {
       throw new Error('Base ref must not start with "-"')
     }
-    const explicitBareRepositoryReadState = createExplicitBareRepositoryReadState()
-    const gitBound: GitExec = (args, cwd, options) =>
-      this.git(args, cwd, {
-        ...options,
-        allowExplicitBareRepositoryRetry: true,
-        explicitBareRepositoryReadState
-      })
-    return branchCompareOp(gitBound, worktreePath, baseRef, async (mergeBase, headOid) => {
+    const git = this.createCompareGit()
+    return branchCompareOp(git, worktreePath, baseRef, async (mergeBase, headOid) => {
       // Why: preserve non-ASCII filenames as UTF-8 for parseBranchDiff.
       const [{ stdout }, { stdout: numstat }] = await Promise.all([
-        gitBound(
+        git(
           ['-c', 'core.quotePath=false', 'diff', '--name-status', '-M', '-C', mergeBase, headOid],
           worktreePath
         ),
-        gitBound(
+        git(
           ['-c', 'core.quotePath=false', 'diff', '--numstat', '-M', '-C', mergeBase, headOid],
           worktreePath
         )
@@ -46,14 +50,7 @@ export class GitHandlerComparisonOperations extends GitHandlerOperationContext {
   async commitCompare(params: Record<string, unknown>) {
     const worktreePath = params.worktreePath as string
     const commitId = params.commitId as string
-    const explicitBareRepositoryReadState = createExplicitBareRepositoryReadState()
-    const gitBound: GitExec = (args, cwd, options) =>
-      this.git(args, cwd, {
-        ...options,
-        allowExplicitBareRepositoryRetry: true,
-        explicitBareRepositoryReadState
-      })
-    return commitCompareOp(gitBound, worktreePath, commitId)
+    return commitCompareOp(this.createCompareGit(), worktreePath, commitId)
   }
 
   async upstreamStatus(params: Record<string, unknown>) {
