@@ -54,6 +54,13 @@ describe('project groups available to a repo', () => {
     expect(filterProjectGroupsForRepo([localGroup], repo)).toEqual([localGroup])
   })
 
+  it('keeps direct-SSH-stamped groups in the client-owned catalog', () => {
+    const repo = { ...baseRepo, connectionId: 'ssh-1' }
+    const otherSshGroup = { ...baseGroup, connectionId: 'ssh-2' }
+
+    expect(filterProjectGroupsForRepo([otherSshGroup], repo)).toEqual([otherSshGroup])
+  })
+
   it('requires host labels only when projects span group catalogs', () => {
     const localRepo = { ...baseRepo, executionHostId: 'local' as const }
     const directSshRepo = { ...baseRepo, id: 'ssh', connectionId: 'workstation' }
