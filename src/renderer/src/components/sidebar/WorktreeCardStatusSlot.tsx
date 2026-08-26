@@ -74,13 +74,17 @@ function getReviewStatusLabel(review: WorktreeCardPrDisplay): string {
   if (review.state === 'draft') {
     return `${label}: Draft`
   }
-  if (review.status === 'failure') {
+  const status = review.checksPresentationStatus ?? review.status
+  if (status === 'failure') {
     return `${label} checks: Failed`
   }
-  if (review.status === 'pending') {
+  if (status === 'action_required') {
+    return `${label} checks: Action required`
+  }
+  if (status === 'pending') {
     return `${label} checks: Pending`
   }
-  if (review.status === 'success') {
+  if (status === 'success') {
     return `${label} checks: Passing`
   }
   return `${label}: Open`

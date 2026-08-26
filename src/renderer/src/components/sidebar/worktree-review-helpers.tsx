@@ -34,13 +34,14 @@ function getCheckTone(review: WorktreeCardPrDisplay): string | null {
   if (review.state && review.state !== 'open') {
     return null
   }
-  if (review.status === 'failure') {
+  const status = review.checksPresentationStatus ?? review.status
+  if (status === 'failure') {
     return 'text-rose-500/85'
   }
-  if (review.status === 'pending') {
+  if (status === 'action_required' || status === 'pending') {
     return 'text-amber-500/85'
   }
-  if (review.state === 'open' && review.status === 'success') {
+  if (review.state === 'open' && status === 'success') {
     return 'text-emerald-500/80'
   }
   return null
