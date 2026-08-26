@@ -37,6 +37,13 @@ describe('runWithGitFetchHeadLock', () => {
       gitDir: path.resolve('/tmp', '/repo/.git'),
       needsLock: true
     })
+    expect(
+      resolveGitFetchHeadCommand(['--git-dir=.', '-C', 'repo', 'fetch'], '/tmp')
+    ).toMatchObject({
+      cwd: '/tmp/repo',
+      gitDir: '/tmp/repo',
+      needsLock: true
+    })
   })
 
   it('serializes FETCH_HEAD users in one worktree without blocking another', async () => {
