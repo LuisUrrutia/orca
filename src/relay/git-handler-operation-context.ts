@@ -14,6 +14,7 @@ export type GitHandlerCommandOptions = {
   stdin?: string
   timeout?: number
   terminationBarrier?: boolean
+  allowExplicitBareRepositoryRetry?: boolean
 }
 
 export type GitHandlerCommandResult = { stdout: string; stderr: string }

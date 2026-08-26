@@ -4,7 +4,10 @@ function gitErrorText(error: unknown): string {
   }
   return ['message', 'stderr']
     .map((field) => (error as Record<string, unknown>)[field])
-    .filter((value): value is string => typeof value === 'string')
+    .map((value) =>
+      typeof value === 'string' ? value : Buffer.isBuffer(value) ? value.toString('utf8') : ''
+    )
+    .filter(Boolean)
     .join('\n')
 }
 
@@ -49,4 +52,19 @@ export function explicitBareRepositoryRetryArgs(
     return null
   }
   return ['--git-dir=.', ...args]
+}
+
+export async function runWithExplicitBareRepositoryRetry<T>(
+  args: readonly string[],
+  run: (commandArgs: string[]) => Promise<T>
+): Promise<T> {
+  try {
+    return await run([...args])
+  } catch (error) {
+    const retryArgs = explicitBareRepositoryRetryArgs(args, error)
+    if (!retryArgs) {
+      throw error
+    }
+    return run(retryArgs)
+  }
 }

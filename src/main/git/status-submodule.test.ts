@@ -123,11 +123,21 @@ describe('submodule diff routing', () => {
 
     expect(gitExecFileAsyncBufferMock).toHaveBeenCalledWith(
       ['show', '--end-of-options', `${OLD_OID}:lib/main.dart`],
-      { cwd: SUBMODULE, maxBuffer: 10 * 1024 * 1024, preferWslDirectGit: true }
+      {
+        cwd: SUBMODULE,
+        maxBuffer: 10 * 1024 * 1024,
+        preferWslDirectGit: true,
+        allowExplicitBareRepositoryRetry: true
+      }
     )
     expect(gitExecFileAsyncBufferMock).toHaveBeenCalledWith(
       ['show', '--end-of-options', `${NEW_OID}:lib/main.dart`],
-      { cwd: SUBMODULE, maxBuffer: 10 * 1024 * 1024, preferWslDirectGit: true }
+      {
+        cwd: SUBMODULE,
+        maxBuffer: 10 * 1024 * 1024,
+        preferWslDirectGit: true,
+        allowExplicitBareRepositoryRetry: true
+      }
     )
     expect(result.kind).toBe('text')
     expect(result.originalContent).toBe('v1\n')
@@ -167,11 +177,21 @@ describe('submodule diff routing', () => {
 
     expect(gitExecFileAsyncBufferMock).toHaveBeenCalledWith(
       ['show', '--end-of-options', `${OLD_OID}:lib/main.dart`],
-      { cwd: SUBMODULE, maxBuffer: 10 * 1024 * 1024, preferWslDirectGit: true }
+      {
+        cwd: SUBMODULE,
+        maxBuffer: 10 * 1024 * 1024,
+        preferWslDirectGit: true,
+        allowExplicitBareRepositoryRetry: true
+      }
     )
     expect(gitExecFileAsyncBufferMock).toHaveBeenCalledWith(
       ['show', '--end-of-options', `${NEW_OID}:lib/main.dart`],
-      { cwd: SUBMODULE, maxBuffer: 10 * 1024 * 1024, preferWslDirectGit: true }
+      {
+        cwd: SUBMODULE,
+        maxBuffer: 10 * 1024 * 1024,
+        preferWslDirectGit: true,
+        allowExplicitBareRepositoryRetry: true
+      }
     )
     expect(result.kind).toBe('text')
     expect(result.originalContent).toBe('v1\n')
@@ -203,7 +223,8 @@ describe('submodule diff routing', () => {
     expect(gitExecFileAsyncBufferMock).toHaveBeenCalledWith(['show', ':lib/main.dart'], {
       cwd: SUBMODULE,
       maxBuffer: 10 * 1024 * 1024,
-      preferWslDirectGit: true
+      preferWslDirectGit: true,
+      allowExplicitBareRepositoryRetry: true
     })
     expect(readFileMock).toHaveBeenCalledWith(path.join(SUBMODULE, 'lib/main.dart'))
     expect(result.kind).toBe('text')

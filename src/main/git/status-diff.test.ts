@@ -103,7 +103,8 @@ describe('getDiff', () => {
     expect(gitExecFileAsyncBufferMock).toHaveBeenCalledWith(['show', ':src/file.ts'], {
       cwd: '/repo',
       maxBuffer: 10 * 1024 * 1024,
-      preferWslDirectGit: true
+      preferWslDirectGit: true,
+      allowExplicitBareRepositoryRetry: true
     })
     expect(readFileMock).toHaveBeenCalledWith(path.join('/repo', 'src/file.ts'))
     expect(result).toEqual({
@@ -124,7 +125,8 @@ describe('getDiff', () => {
     expect(gitExecFileAsyncBufferMock).toHaveBeenCalledWith(['show', ':src/file.ts'], {
       cwd: '/repo',
       maxBuffer: 10 * 1024 * 1024,
-      preferWslDirectGit: true
+      preferWslDirectGit: true,
+      allowExplicitBareRepositoryRetry: true
     })
   })
 
@@ -142,7 +144,8 @@ describe('getDiff', () => {
       {
         cwd: '/repo',
         maxBuffer: 10 * 1024 * 1024,
-        preferWslDirectGit: true
+        preferWslDirectGit: true,
+        allowExplicitBareRepositoryRetry: true
       }
     )
     expect(result.originalContent).toBe('head-content\n')
