@@ -62,11 +62,46 @@ describe('live query replies', () => {
     }
   )
 
-  it('answers repeated identical replies without collapsing them', () => {
-    const { ingress, writes } = harness()
-    expect(ingress.answerLiveQueryReply(COLOR_SCHEME_REPLY)).toBe(true)
-    expect(ingress.answerLiveQueryReply(COLOR_SCHEME_REPLY)).toBe(true)
-    expect(writes).toEqual([COLOR_SCHEME_REPLY, COLOR_SCHEME_REPLY])
+  it.each([COLOR_SCHEME_REPLY, XTVERSION_REPLY])(
+    'answers repeated identical replies without collapsing them',
+    (reply) => {
+      const { ingress, writes } = harness()
+      expect(ingress.answerLiveQueryReply(reply)).toBe(true)
+      expect(ingress.answerLiveQueryReply(reply)).toBe(true)
+      expect(writes).toEqual([reply, reply])
+      ingress.drainAndClose()
+    }
+  )
+
+  it('reports a recognized reply when its immediate write fails', () => {
+    const ingress = new PtyStartupIngress({
+      ownerBackend: 'posix-pty',
+      write: () => {
+        throw new Error('EIO')
+      },
+      onEmission: () => {}
+    })
+
+    expect(ingress.deliverLiveQueryReply(XTVERSION_REPLY)).toBe('write-failed')
+    ingress.drainAndClose()
+  })
+
+  it.each([0, 1])('claims a repeated payload when write %i fails', (failedWrite) => {
+    const writes: string[] = []
+    let writeIndex = 0
+    const ingress = new PtyStartupIngress({
+      ownerBackend: 'posix-pty',
+      write: (data) => {
+        if (writeIndex++ === failedWrite) {
+          throw new Error('EIO')
+        }
+        writes.push(data)
+      },
+      onEmission: () => {}
+    })
+
+    expect(ingress.answerLiveQueryReply(XTVERSION_REPLY + XTVERSION_REPLY)).toBe(true)
+    expect(writes).toEqual([XTVERSION_REPLY])
     ingress.drainAndClose()
   })
 
@@ -178,7 +213,14 @@ describe('live query replies', () => {
     // CPR and DA1 need no echo containment, so the delivery declines them and the host
     // writes them itself — which is what keeps them behind the daemon's post-ready flush
     // gate instead of splicing into a buffered startup command.
-    for (const reply of [CPR_REPLY, DA1_REPLY, OSC_COLOR_REPLY + DA1_REPLY]) {
+    for (const reply of [
+      CPR_REPLY,
+      DA1_REPLY,
+      OSC_COLOR_REPLY + DA1_REPLY,
+      XTVERSION_REPLY + DA1_REPLY,
+      XTVERSION_REPLY.slice(0, -2),
+      '>|xterm.js(6.1.0-beta.287)'
+    ]) {
       expect(ingress.answerLiveQueryReply(reply)).toBe(false)
     }
     expect(writes).toEqual([])
