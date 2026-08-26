@@ -107,6 +107,18 @@ describe('ReviewIcon', () => {
     expect(actionRequired).not.toContain('text-emerald-500/80')
   })
 
+  it('keeps an open review neutral until its checks have loaded', () => {
+    const loadingChecks = renderToStaticMarkup(
+      <ReviewIcon
+        review={{ provider: 'github', number: 1, title: 'Loading checks', state: 'open' }}
+        className="size-3"
+      />
+    )
+
+    expect(loadingChecks).toContain('text-muted-foreground')
+    expect(loadingChecks).not.toContain('text-emerald-500/80')
+  })
+
   it('renders merged reviews with the merge glyph', () => {
     const merged = renderToStaticMarkup(
       <ReviewIcon

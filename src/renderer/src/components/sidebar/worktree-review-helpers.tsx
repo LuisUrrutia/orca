@@ -25,11 +25,8 @@ export function getProviderName(review: WorktreeCardPrDisplay): string {
   return 'GitHub'
 }
 
-// Why: checks only gate a review that is actually open; draft/closed/merged keep
-// their state tone so the glyph agrees with its tooltip. A stateless row (folder
-// cards render one while a linked review is loading or its details failed) has no
-// state glyph to contradict, so it still flags problems — but never claims success,
-// since emerald would assert an open review we have not confirmed.
+// Why: checks only gate an open review; draft/closed/merged keep their state tone.
+// Stateless rows may surface known problems, but emerald requires confirmed success.
 function getCheckTone(review: WorktreeCardPrDisplay): string | null {
   if (review.state && review.state !== 'open') {
     return null
@@ -51,16 +48,13 @@ function getStateTone(state: WorktreeCardPrDisplay['state']): string {
   if (state === 'merged') {
     return 'text-purple-600/70 dark:text-purple-400/70'
   }
-  if (state === 'open') {
-    return 'text-emerald-500/80'
-  }
   if (state === 'closed') {
     return 'text-muted-foreground/60'
   }
   if (state === 'draft') {
     return 'text-muted-foreground/50'
   }
-  return 'text-muted-foreground opacity-70'
+  return 'text-muted-foreground'
 }
 
 export function ReviewIcon({
