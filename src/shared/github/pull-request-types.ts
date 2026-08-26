@@ -117,6 +117,8 @@ export type ProviderCheckSummary = {
   failed: number
   pending: number
   neutral: number
+  /** Subset of `failed` retained separately so new clients can distinguish approval gates. */
+  actionRequired?: number
 }
 
 export type GitHubPRReviewSummary = {

@@ -190,6 +190,28 @@ describe('presentGitHubPRMergeState', () => {
     })
   })
 
+  it('presents action-required checks as a warning rather than a failure', () => {
+    expect(
+      presentGitHubPRMergeState(
+        pr({
+          checksSummary: {
+            state: 'failure',
+            total: 2,
+            passed: 0,
+            failed: 2,
+            pending: 0,
+            neutral: 0,
+            actionRequired: 2
+          }
+        })
+      )
+    ).toMatchObject({
+      label: 'Action required',
+      tone: expect.stringContaining('amber'),
+      directMergeAvailable: true
+    })
+  })
+
   it('labels unresolved GitHub mergeability as checking', () => {
     expect(
       presentGitHubPRMergeState(
