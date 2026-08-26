@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { PullRequestLookupData } from './pull-request-lookup-data'
-import { hydrateMissingUnstablePRCheckRollup } from './missing-unstable-pr-check-rollup'
+import { hydrateUnstablePRCheckRollup } from './unstable-pr-check-rollup'
 
 const getPRChecksWithExistingOperationPermitMock = vi.hoisted(() => vi.fn())
 
@@ -30,7 +30,7 @@ const lookupArgs = {
   localGitOptions: {}
 }
 
-describe('hydrateMissingUnstablePRCheckRollup', () => {
+describe('hydrateUnstablePRCheckRollup', () => {
   beforeEach(() => {
     getPRChecksWithExistingOperationPermitMock.mockReset()
   })
@@ -45,7 +45,7 @@ describe('hydrateMissingUnstablePRCheckRollup', () => {
       }
     ])
 
-    await hydrateMissingUnstablePRCheckRollup(createPullRequest(), lookupArgs)
+    await hydrateUnstablePRCheckRollup(createPullRequest(), lookupArgs)
 
     expect(getPRChecksWithExistingOperationPermitMock).toHaveBeenCalledWith(
       '/repo-root',
@@ -67,11 +67,7 @@ describe('hydrateMissingUnstablePRCheckRollup', () => {
       }
     ])
 
-    const result = await hydrateMissingUnstablePRCheckRollup(
-      createPullRequest(),
-      lookupArgs,
-      loadChecks
-    )
+    const result = await hydrateUnstablePRCheckRollup(createPullRequest(), lookupArgs, loadChecks)
 
     expect(loadChecks).toHaveBeenCalledOnce()
     expect(result.statusCheckRollup).toEqual([
@@ -79,14 +75,49 @@ describe('hydrateMissingUnstablePRCheckRollup', () => {
     ])
   })
 
+  it('replaces a partial passing rollup with detailed checks for an open unstable PR', async () => {
+    const loadChecks = vi.fn().mockResolvedValue([
+      {
+        name: 'track-community-pr',
+        status: 'completed',
+        conclusion: 'success',
+        url: null
+      },
+      {
+        name: 'GitHub Actions',
+        status: 'completed',
+        conclusion: 'action_required',
+        url: null
+      }
+    ])
+
+    const result = await hydrateUnstablePRCheckRollup(
+      createPullRequest({
+        statusCheckRollup: [
+          { name: 'track-community-pr', status: 'COMPLETED', conclusion: 'SUCCESS' }
+        ]
+      }),
+      lookupArgs,
+      loadChecks
+    )
+
+    expect(loadChecks).toHaveBeenCalledOnce()
+    expect(result.statusCheckRollup).toEqual([
+      expect.objectContaining({ conclusion: 'success' }),
+      expect.objectContaining({ conclusion: 'action_required' })
+    ])
+  })
+
   it.each([
-    ['a populated rollup', { statusCheckRollup: [{ conclusion: 'failure' }] }],
+    ['a failing rollup', { statusCheckRollup: [{ conclusion: 'failure' }] }],
+    ['a pending rollup', { statusCheckRollup: [{ status: 'IN_PROGRESS' }] }],
+    ['an action-required rollup', { statusCheckRollup: [{ conclusion: 'action_required' }] }],
     ['a stable merge state', { mergeStateStatus: 'CLEAN' }],
     ['a closed PR', { state: 'CLOSED' }]
   ])('does not load detailed checks for %s', async (_label, overrides) => {
     const loadChecks = vi.fn()
 
-    const result = await hydrateMissingUnstablePRCheckRollup(
+    const result = await hydrateUnstablePRCheckRollup(
       createPullRequest(overrides),
       lookupArgs,
       loadChecks
@@ -96,15 +127,30 @@ describe('hydrateMissingUnstablePRCheckRollup', () => {
     expect(result).toEqual(createPullRequest(overrides))
   })
 
-  it('keeps the PR summary when detailed checks cannot be loaded', async () => {
+  it('keeps a partial passing rollup neutral when detailed checks are empty', async () => {
+    const data = createPullRequest({
+      statusCheckRollup: [{ name: 'track-community-pr', conclusion: 'SUCCESS' }]
+    })
+    const loadChecks = vi.fn().mockResolvedValue([])
+
+    const result = await hydrateUnstablePRCheckRollup(data, lookupArgs, loadChecks)
+
+    expect(loadChecks).toHaveBeenCalledOnce()
+    expect(result.statusCheckRollup).toEqual([])
+    expect(data.statusCheckRollup).toHaveLength(1)
+  })
+
+  it('keeps a partial passing rollup neutral when detailed checks cannot be loaded', async () => {
     const error = new Error('rate limited')
     const loadChecks = vi.fn().mockRejectedValue(error)
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
-    const data = createPullRequest()
+    const data = createPullRequest({
+      statusCheckRollup: [{ name: 'track-community-pr', conclusion: 'SUCCESS' }]
+    })
 
-    const result = await hydrateMissingUnstablePRCheckRollup(data, lookupArgs, loadChecks)
+    const result = await hydrateUnstablePRCheckRollup(data, lookupArgs, loadChecks)
 
-    expect(result).toBe(data)
+    expect(result.statusCheckRollup).toEqual([])
     expect(warn).toHaveBeenCalledWith('Unable to hydrate unstable PR checks:', error)
     warn.mockRestore()
   })
