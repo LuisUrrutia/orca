@@ -218,6 +218,47 @@ describe('WorktreeCardStatusSlot', () => {
     expect(markup).not.toContain('data-tooltip-root')
   })
 
+  it('keeps neutral PR checks gray in the new-card status lane', () => {
+    const markup = renderToStaticMarkup(
+      <WorktreeCardStatusSlot
+        worktreeId="wt-1"
+        showStatus
+        showUnreadAction={false}
+        isUnread={false}
+        unreadTooltip="Mark as unread"
+        onPointerDown={vi.fn()}
+        onToggleUnread={vi.fn()}
+        prDisplay={{ ...review, status: 'neutral' }}
+        newCardStyle
+      />
+    )
+
+    expect(markup).toContain('PR: Open')
+    expect(markup).toContain('size-[13px] translate-x-px text-muted-foreground')
+    expect(markup).not.toContain('text-emerald-500/80')
+    expect(markup).not.toContain('bg-emerald-500')
+  })
+
+  it('keeps confirmed passing PR checks green in the new-card status lane', () => {
+    const markup = renderToStaticMarkup(
+      <WorktreeCardStatusSlot
+        worktreeId="wt-1"
+        showStatus
+        showUnreadAction={false}
+        isUnread={false}
+        unreadTooltip="Mark as unread"
+        onPointerDown={vi.fn()}
+        onToggleUnread={vi.fn()}
+        prDisplay={{ ...review, status: 'success' }}
+        newCardStyle
+      />
+    )
+
+    expect(markup).toContain('PR checks: Passing')
+    expect(markup).toContain('size-[13px] translate-x-px text-emerald-500/80')
+    expect(markup).not.toContain('text-muted-foreground')
+  })
+
   it('uses the unified compact review glyph for GitLab MR status', () => {
     const markup = renderToStaticMarkup(
       <WorktreeCardStatusSlot
