@@ -1,5 +1,5 @@
 import { createElement } from 'react'
-import { GitMerge, Loader2 } from 'lucide-react'
+import { GitMerge } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { getReviewStateIcon } from '@/components/github/review-state-presentation'
 import { PullRequestIcon } from './WorktreeCardHelpers'
@@ -60,24 +60,16 @@ function getStateTone(state: WorktreeCardPrDisplay['state']): string {
 export function ReviewIcon({
   review,
   className,
-  variant = 'provider',
-  showLoadingSpinner = false
+  variant = 'provider'
 }: {
   review: WorktreeCardPrDisplay
   className?: string
   variant?: 'provider' | 'generic'
-  showLoadingSpinner?: boolean
 }): React.JSX.Element {
   const providerIcon =
     variant === 'provider' && review.provider === 'gitlab' ? GitMerge : PullRequestIcon
-  const stateIcon = getReviewStateIcon(review.state)
-  const Icon = stateIcon ?? (showLoadingSpinner ? Loader2 : providerIcon)
-
+  const Icon = getReviewStateIcon(review.state) ?? providerIcon
   return createElement(Icon, {
-    className: cn(
-      className,
-      getCheckTone(review) ?? getStateTone(review.state),
-      !stateIcon && showLoadingSpinner && 'animate-spin'
-    )
+    className: cn(className, getCheckTone(review) ?? getStateTone(review.state))
   })
 }

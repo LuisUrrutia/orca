@@ -335,30 +335,6 @@ describe('WorktreeCardDetailsHover', () => {
     expect(hoverMarkup).toContain('https://company.atlassian.net/browse/KAN-1')
   })
 
-  it('shows a spinner in the sidebar PR badge while details load', () => {
-    const markup = renderToStaticMarkup(
-      <WorktreeCardMetaBadges
-        issue={null}
-        linearIssue={null}
-        jiraIssue={null}
-        review={{
-          provider: 'github',
-          number: 456,
-          title: 'Checking PR status',
-          isLoading: true
-        }}
-        comment={null}
-      />
-    )
-
-    expect(markup).toContain('Linked PR #456')
-    expect(markup).toContain('lucide-loader-circle')
-    expect(markup).toContain('animate-spin')
-    expect(markup).toContain('text-muted-foreground')
-    expect(markup).not.toContain('text-amber-500/85')
-    expect(markup).not.toContain('viewBox="0 0 16 16"')
-  })
-
   it('shows identifier when Linear issue URL is unavailable', () => {
     const markup = renderToStaticMarkup(
       <WorktreeCardDetailsHover

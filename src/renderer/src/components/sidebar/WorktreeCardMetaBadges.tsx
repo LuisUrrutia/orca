@@ -149,7 +149,7 @@ export const WorktreeCardMetaBadges = React.forwardRef<
             { value0: getReviewLabel(review), value1: review.number }
           )}
         >
-          <ReviewIcon review={review} showLoadingSpinner={review.isLoading} />
+          <ReviewIcon review={review} />
         </MetaIconBadge>
       )}
     </div>
