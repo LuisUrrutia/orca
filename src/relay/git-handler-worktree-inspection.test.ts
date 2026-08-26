@@ -75,7 +75,8 @@ describe('GitHandler', () => {
         )
       ).rejects.toThrow('aborted')
       expect(gitSpy).toHaveBeenCalledWith(['worktree', 'list', '--porcelain', '-z'], tmpDir, {
-        signal: controller.signal
+        signal: controller.signal,
+        allowExplicitBareRepositoryRetry: true
       })
     })
 

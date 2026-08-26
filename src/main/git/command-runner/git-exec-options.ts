@@ -20,4 +20,5 @@ export type GitExecOptions = {
   captureWslLoginShellOutput?: boolean
   /** Scheduler priority for this child; status is the safe default. */
   admissionTier?: GitAdmissionTier
+  allowExplicitBareRepositoryRetry?: boolean
 }

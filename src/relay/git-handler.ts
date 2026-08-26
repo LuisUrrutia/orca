@@ -25,7 +25,7 @@ import { registerGitHandlers } from './git-handler-registration'
 import { resolveGitFetchHeadCommand, runWithGitFetchHeadLock } from '../shared/git-fetch-head-lock'
 import { endSubprocessStdin } from '../shared/subprocess-stdin-write'
 import { MAX_GIT_BUFFER, runGitToTermination } from './git-handler-command-termination'
-import { explicitBareRepositoryRetryArgs } from '../shared/git-bare-repository-command'
+import { runWithExplicitBareRepositoryRetry } from '../shared/git-bare-repository-command'
 
 const execFileAsync = promisify(execFile)
 
@@ -188,25 +188,21 @@ export class GitHandler {
         ? runWithGitFetchHeadLock(command.cwd, opts?.signal, () => run(commandArgs), command.gitDir)
         : run(commandArgs)
     }
-    try {
-      return await execute(args)
-    } catch (error) {
-      const retryArgs = explicitBareRepositoryRetryArgs(args, error)
-      if (!retryArgs) {
-        throw error
-      }
-      return execute(retryArgs)
-    }
+    return opts?.allowExplicitBareRepositoryRetry
+      ? runWithExplicitBareRepositoryRetry(args, execute)
+      : execute(args)
   }
 
   private async gitBuffer(args: string[], cwd: string): Promise<Buffer> {
-    const { stdout } = (await execFileAsync('git', args, {
-      cwd,
-      env: buildRelayGitEnv(),
-      encoding: 'buffer',
-      maxBuffer: MAX_GIT_BUFFER
-    })) as { stdout: Buffer }
-    return stdout
+    return runWithExplicitBareRepositoryRetry(args, async (commandArgs) => {
+      const { stdout } = (await execFileAsync('git', commandArgs, {
+        cwd,
+        env: buildRelayGitEnv(),
+        encoding: 'buffer',
+        maxBuffer: MAX_GIT_BUFFER
+      })) as { stdout: Buffer }
+      return stdout
+    })
   }
 
   private async spawnClone(
