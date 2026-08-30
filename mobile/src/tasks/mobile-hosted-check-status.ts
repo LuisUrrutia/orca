@@ -2,7 +2,10 @@ import type {
   PRMergeableState,
   ProviderCheckSummary
 } from '../../../src/shared/github/pull-request-types'
-import { getProviderChecksLabel } from '../../../src/shared/provider-check-summary'
+import {
+  getProviderChecksLabel,
+  getProviderChecksPresentationState
+} from '../../../src/shared/provider-check-summary'
 
 export type MobileHostedReviewStatus = {
   checksSummary?: ProviderCheckSummary
@@ -71,13 +74,14 @@ export function getHostedReviewSignalTone(
     return 'neutral'
   }
   if (signal === 'checks') {
-    if (item.checksSummary?.state === 'success') {
+    const state = getProviderChecksPresentationState(item.checksSummary)
+    if (state === 'success') {
       return 'success'
     }
-    if (item.checksSummary?.state === 'failure') {
+    if (state === 'failure') {
       return 'danger'
     }
-    if (item.checksSummary?.state === 'pending') {
+    if (state === 'action_required' || state === 'pending') {
       return 'warning'
     }
     return 'neutral'

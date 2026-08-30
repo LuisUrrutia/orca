@@ -20,6 +20,21 @@ describe('mobile hosted check status', () => {
     expect(getHostedReviewSignalTone({ checksSummary: summary }, 'checks')).toBe('neutral')
   })
 
+  it('renders action-required checks as an amber manual-action state', () => {
+    const summary = {
+      state: 'failure' as const,
+      total: 1,
+      passed: 0,
+      failed: 1,
+      actionRequired: 1,
+      pending: 0,
+      neutral: 0
+    }
+
+    expect(getHostedChecksLabel({ checksSummary: summary })).toBe('Action required: 1')
+    expect(getHostedReviewSignalTone({ checksSummary: summary }, 'checks')).toBe('warning')
+  })
+
   it('accepts provider-neutral GitHub status fields without a shared work-item type', () => {
     expect(
       getHostedReviewSignalTone(
