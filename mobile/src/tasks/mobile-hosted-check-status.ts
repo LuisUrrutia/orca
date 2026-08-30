@@ -16,6 +16,13 @@ export type MobileHostedReviewStatus = {
   mergeStateStatus?: string | null
 }
 
+type HostedReviewSignalTone = 'neutral' | 'success' | 'warning' | 'danger'
+
+type HostedMergePresentation = {
+  label: string
+  tone: HostedReviewSignalTone
+}
+
 export function getHostedReviewLabel(item: MobileHostedReviewStatus): string {
   if (item.reviewDecision === 'approved' || item.reviewDecision === 'APPROVED') {
     return 'Approved'
@@ -32,17 +39,28 @@ export function getHostedReviewLabel(item: MobileHostedReviewStatus): string {
     : 'No reviewers'
 }
 
-export function getHostedMergeLabel(item: MobileHostedReviewStatus): string {
+function getHostedMergePresentation(item: MobileHostedReviewStatus): HostedMergePresentation {
   if (item.mergeable === 'CONFLICTING' || item.mergeStateStatus === 'BLOCKED') {
-    return 'Conflicts'
+    return { label: 'Conflicts', tone: 'danger' }
   }
-  if (item.mergeStateStatus === 'BEHIND' || item.checksSummary?.state === 'pending') {
-    return 'Behind'
+  const checksState = getProviderChecksPresentationState(item.checksSummary)
+  if (item.mergeStateStatus === 'BEHIND' || checksState === 'pending') {
+    return { label: 'Behind', tone: 'warning' }
+  }
+  if (checksState === 'failure') {
+    return { label: 'Checks failed', tone: 'danger' }
+  }
+  if (checksState === 'action_required') {
+    return { label: 'Action required', tone: 'warning' }
   }
   if (item.mergeable === 'MERGEABLE' || item.mergeStateStatus === 'CLEAN') {
-    return 'Able to merge'
+    return { label: 'Able to merge', tone: 'success' }
   }
-  return 'Unknown'
+  return { label: 'Unknown', tone: 'neutral' }
+}
+
+export function getHostedMergeLabel(item: MobileHostedReviewStatus): string {
+  return getHostedMergePresentation(item).label
 }
 
 export function getHostedChecksLabel(item: { checksSummary?: ProviderCheckSummary }): string {
@@ -52,7 +70,7 @@ export function getHostedChecksLabel(item: { checksSummary?: ProviderCheckSummar
 export function getHostedReviewSignalTone(
   item: MobileHostedReviewStatus,
   signal: 'review' | 'checks' | 'merge'
-): 'neutral' | 'success' | 'warning' | 'danger' {
+): HostedReviewSignalTone {
   if (signal === 'review') {
     if (item.reviewDecision === 'approved' || item.reviewDecision === 'APPROVED') {
       return 'success'
@@ -86,14 +104,5 @@ export function getHostedReviewSignalTone(
     }
     return 'neutral'
   }
-  if (item.mergeable === 'CONFLICTING' || item.mergeStateStatus === 'BLOCKED') {
-    return 'danger'
-  }
-  if (item.mergeStateStatus === 'BEHIND' || item.checksSummary?.state === 'pending') {
-    return 'warning'
-  }
-  if (item.mergeable === 'MERGEABLE' || item.mergeStateStatus === 'CLEAN') {
-    return 'success'
-  }
-  return 'neutral'
+  return getHostedMergePresentation(item).tone
 }
